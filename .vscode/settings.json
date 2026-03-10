@@ -1,0 +1,34 @@
+{
+    "files.eol": "\n",
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2,
+    "files.trimTrailingWhitespace": true,
+    "editor.wordWrap": "on",
+    "editor.rulers": [
+        100
+    ],
+    "markdown.updateLinksOnFileMove.enabled": "prompt",
+    "markdown.preview.breaks": false,
+    "markdown.preview.scrollEditorWithPreview": true,
+    "cSpell.language": "en-GB",
+    "cSpell.enableFiletypes": [
+        "markdown",
+        "yaml",
+        "json"
+    ],
+    "cSpell.caseSensitive": false,
+    "cSpell.ignorePaths": [
+        "_site/**",
+        "node_modules/**",
+        ".git/**",
+        "quartz/static/**"
+    ],
+    "files.exclude": {
+        "_site": true
+    },
+    "search.exclude": {
+        "_site": true,
+        "node_modules": true
+    },
+    "editor.formatOnSave": false
+}

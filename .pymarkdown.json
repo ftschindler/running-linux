@@ -1,0 +1,29 @@
+{
+    "plugins": [],
+    "extensions": [],
+    "config": {
+        "line-length": {
+            "enabled": false
+        },
+        "no-hard-tabs": {
+            "enabled": true
+        },
+        "spaces-after-list-marker": {
+            "enabled": true,
+            "punctuation": "consistent"
+        },
+        "list-marker-space": {
+            "enabled": true
+        },
+        "ol-prefix": {
+            "enabled": true,
+            "style": "ordered"
+        },
+        "blanks-around-headings": {
+            "enabled": true
+        },
+        "heading-increment": {
+            "enabled": true
+        }
+    }
+}

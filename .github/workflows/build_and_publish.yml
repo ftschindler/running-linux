@@ -1,0 +1,48 @@
+name: Build Site with Quartz
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+jobs:
+  build_site:
+    name: Build site
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: bash -eo pipefail -l {0}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+          submodules: recursive
+      - name: Setup environment and dependencies
+        run: |
+          make bootstrap
+      - name: Build the site
+        run: |
+          make build
+      - name: Upload html artifact
+        uses: actions/upload-pages-artifact@v3
+  deploy_site:
+    name: Deploy site (on push to main)
+    runs-on: ubuntu-24.04
+    needs: [build_site]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write # to deploy to Pages
+      id-token: write # to verify the deployment originates from an appropriate source
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4.0.5
