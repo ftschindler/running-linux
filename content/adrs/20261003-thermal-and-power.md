@@ -124,7 +124,7 @@ sudo systemctl disable power-profiles-daemon
 sudo systemctl mask power-profiles-daemon
 ```
 
-**Rationale:** TLP and power-profiles-daemon conflict. TLP provides more granular control needed for thermal management.
+**Rationale:** TLP and power-profiles-daemon conflict. TLP provides more granular control needed for thermal management. See [Arch Wiki: TLP](https://wiki.archlinux.org/title/TLP) for details.
 
 ### Step 2: Install Required Packages
 
@@ -144,7 +144,9 @@ sudo pacman -S tlp tlp-rdw thermald cpupower acpi_call \
 
 ### Step 3: TLP Configuration
 
-Create `/etc/tlp.conf` with the following key settings:
+Create `/etc/tlp.conf` with the following key settings.
+
+For complete documentation, see [TLP Configuration](https://linrunner.de/tlp/settings/) and [Arch Wiki: TLP](https://wiki.archlinux.org/title/TLP).
 
 ```conf
 # ===== CPU Performance vs Power =====
@@ -231,7 +233,9 @@ SOUND_POWER_SAVE_ON_BAT=1
 
 ### Step 4: thermald Configuration
 
-Create `/etc/thermald/thermal-conf.xml`:
+Create `/etc/thermald/thermal-conf.xml`.
+
+For more information, see [thermald documentation](https://github.com/intel/thermal_daemon) and [Arch Wiki: thermald](https://wiki.archlinux.org/title/Thermald).
 
 ```xml
 <?xml version="1.0"?>
@@ -285,7 +289,9 @@ Create `/etc/thermald/thermal-conf.xml`:
 
 ### Step 5: Kernel Parameters
 
-Edit `/etc/default/grub` and add to `GRUB_CMDLINE_LINUX_DEFAULT`:
+Edit `/etc/default/grub` and add to `GRUB_CMDLINE_LINUX_DEFAULT`.
+
+For more details on kernel parameters, see [Arch Wiki: Kernel parameters](https://wiki.archlinux.org/title/Kernel_parameters) and [Arch Wiki: CPU frequency scaling](https://wiki.archlinux.org/title/CPU_frequency_scaling).
 
 ```text
 intel_pstate=active intel_iommu=on i915.enable_fbc=1 i915.enable_psr=2 watchdog.timeout=30
@@ -372,7 +378,9 @@ Configure via **System Settings → Power Management**
 - Increased disk I/O → power consumption
 - System stuttering and potential freezes during memory pressure
 
-**Solution:** Optimize for minimal swap usage while preventing OOM situations
+**Solution:** Optimize for minimal swap usage while preventing OOM situations.
+
+For background on swap configuration, see [Arch Wiki: Swap](https://wiki.archlinux.org/title/Swap) and [Arch Wiki: Improving performance](https://wiki.archlinux.org/title/Improving_performance).
 
 Create `/etc/sysctl.d/99-swap-memory.conf`:
 
@@ -452,6 +460,8 @@ vm.panic_on_oom=0
 ```
 
 **Apply configuration:**
+
+For more on sysctl configuration, see [Arch Wiki: sysctl](https://wiki.archlinux.org/title/Sysctl).
 
 ```bash
 # Create the configuration file (use editor or cat)
@@ -840,15 +850,27 @@ After implementing this plan:
 
 ## References
 
-- [TLP Documentation](https://linrunner.de/tlp/)
-- [thermald GitHub](https://github.com/intel/thermal_daemon)
-- [Arch Wiki: Power Management](https://wiki.archlinux.org/title/Power_management)
-- [Arch Wiki: CPU Frequency Scaling](https://wiki.archlinux.org/title/CPU_frequency_scaling)
-- [Arch Wiki: Swap](https://wiki.archlinux.org/title/Swap)
-- [Arch Wiki: Improving Performance](https://wiki.archlinux.org/title/Improving_performance)
-- [Intel P-state Driver Documentation](https://www.kernel.org/doc/html/latest/admin-guide/pm/intel_pstate.html)
-- [Powerdevil Documentation](https://userbase.kde.org/Power_Management)
-- [Linux Memory Management Documentation](https://www.kernel.org/doc/html/latest/admin-guide/sysctl/vm.html)
+### Official Documentation
+
+- [TLP Documentation](https://linrunner.de/tlp/) - Complete TLP configuration guide
+- [TLP FAQ](https://linrunner.de/tlp/faq/) - Common questions and troubleshooting
+- [thermald GitHub](https://github.com/intel/thermal_daemon) - Intel thermal daemon source and documentation
+- [Intel P-state Driver Documentation](https://www.kernel.org/doc/html/latest/admin-guide/pm/intel_pstate.html) - Kernel P-state documentation
+- [Linux Memory Management Documentation](https://www.kernel.org/doc/html/latest/admin-guide/sysctl/vm.html) - Kernel VM sysctl parameters
+- [Powerdevil Documentation](https://userbase.kde.org/Power_Management) - KDE power management
+
+### Arch Wiki Articles
+
+- [Power management](https://wiki.archlinux.org/title/Power_management) - Overview of power management on Linux
+- [CPU frequency scaling](https://wiki.archlinux.org/title/CPU_frequency_scaling) - CPU governor and frequency configuration
+- [Swap](https://wiki.archlinux.org/title/Swap) - Swap configuration and optimization
+- [Improving performance](https://wiki.archlinux.org/title/Improving_performance) - System performance tuning
+- [dm-crypt/Encrypting an entire system](https://wiki.archlinux.org/title/Dm-crypt/Encrypting_an_entire_system) - LUKS encryption setup
+- [Laptop](https://wiki.archlinux.org/title/Laptop) - Laptop-specific optimizations
+- [TLP](https://wiki.archlinux.org/title/TLP) - TLP installation and configuration on Arch
+- [thermald](https://wiki.archlinux.org/title/Thermald) - thermald setup on Arch
+- [Kernel parameters](https://wiki.archlinux.org/title/Kernel_parameters) - How to configure kernel boot parameters
+- [sysctl](https://wiki.archlinux.org/title/Sysctl) - Runtime kernel parameter configuration
 
 ## Revision History
 
