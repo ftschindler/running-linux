@@ -59,105 +59,21 @@ Additionally, the mainline kernel IPU6 drivers lack PSYS (Processing System) sup
    echo "options v4l2loopback devices=1 video_nr=42 card_label=\"IPU6 Virtual Webcam\"" | sudo tee /etc/modprobe.d/v4l2loopback.conf
    ```
 
-6. Create webcam manager script at `~/.local/bin/ipu6-webcam-manager`:
+6. Create webcam startup script at `~/.local/bin/ipu6-webcam-manager`:
 
    ```bash
    #!/bin/bash
-   # IPU6 Virtual Webcam On-Demand Manager
-   # Uses a priming pipeline to keep device accessible, switches to real camera on demand
+   # IPU6 Virtual Webcam - Simple Always-On Mode
+   # Keeps real camera pipeline running continuously
 
    VIRTUAL_DEVICE="/dev/video42"
-   REAL_PIPELINE="gst-launch-1.0 icamerasrc ! video/x-raw,width=1280,height=720 ! videoconvert ! v4l2sink device=${VIRTUAL_DEVICE}"
-   PRIMING_PIPELINE="gst-launch-1.0 videotestsrc pattern=black ! video/x-raw,width=1280,height=720,framerate=30/1 ! videoconvert ! v4l2sink device=${VIRTUAL_DEVICE}"
+   PIPELINE="gst-launch-1.0 icamerasrc ! video/x-raw,width=1280,height=720 ! videoconvert ! v4l2sink device=${VIRTUAL_DEVICE}"
 
-   REAL_PID=""
-   PRIMING_PID=""
-   CURRENT_MODE="priming"
-
-   cleanup() {
-       echo "Shutting down..."
-       [ -n "$REAL_PID" ] && kill "$REAL_PID" 2>/dev/null
-       [ -n "$PRIMING_PID" ] && kill "$PRIMING_PID" 2>/dev/null
-       exit 0
-   }
-
-   trap cleanup SIGTERM SIGINT
-
-   start_priming() {
-       if [ -z "$PRIMING_PID" ] || ! kill -0 "$PRIMING_PID" 2>/dev/null; then
-           echo "$(date): Starting priming pipeline (low-power mode)..."
-           $PRIMING_PIPELINE >/dev/null 2>&1 &
-           PRIMING_PID=$!
-           CURRENT_MODE="priming"
-       fi
-   }
-
-   start_real() {
-       # Stop priming if running
-       if [ -n "$PRIMING_PID" ] && kill -0 "$PRIMING_PID" 2>/dev/null; then
-           kill "$PRIMING_PID" 2>/dev/null
-           sleep 0.5
-       fi
-
-       # Start real camera
-       if [ -z "$REAL_PID" ] || ! kill -0 "$REAL_PID" 2>/dev/null; then
-           echo "$(date): Starting real camera pipeline (LED ON)..."
-           $REAL_PIPELINE >/dev/null 2>&1 &
-           REAL_PID=$!
-           CURRENT_MODE="real"
-       fi
-   }
-
-   stop_real() {
-       if [ -n "$REAL_PID" ] && kill -0 "$REAL_PID" 2>/dev/null; then
-           echo "$(date): Stopping real camera pipeline (LED OFF)..."
-           kill "$REAL_PID" 2>/dev/null
-           REAL_PID=""
-           sleep 0.5
-           start_priming
-       fi
-   }
-
-   echo "IPU6 Virtual Webcam Manager started"
-
-   # Start with priming pipeline
-   start_priming
-   sleep 2
-
-   # Main monitoring loop
-   while true; do
-       # Count processes accessing the device (excluding our own pipelines)
-       USERS=$(fuser ${VIRTUAL_DEVICE} 2>/dev/null | tr ' ' '\n' | grep -v "^$" | grep -v "^${REAL_PID}$" | grep -v "^${PRIMING_PID}$" | wc -l)
-
-       if [ "$USERS" -gt 0 ]; then
-           # Someone is using the camera
-           if [ "$CURRENT_MODE" = "priming" ]; then
-               start_real
-           fi
-       else
-           # No external users
-           if [ "$CURRENT_MODE" = "real" ]; then
-               stop_real
-           fi
-       fi
-
-       # Ensure priming is running when in priming mode
-       if [ "$CURRENT_MODE" = "priming" ]; then
-           if [ -z "$PRIMING_PID" ] || ! kill -0 "$PRIMING_PID" 2>/dev/null; then
-               start_priming
-           fi
-       fi
-
-       # Ensure real pipeline is running when in real mode
-       if [ "$CURRENT_MODE" = "real" ]; then
-           if [ -z "$REAL_PID" ] || ! kill -0 "$REAL_PID" 2>/dev/null; then
-               start_real
-           fi
-       fi
-
-       sleep 2
-   done
+   echo "$(date): Starting IPU6 Virtual Webcam (always-on mode)..."
+   exec $PIPELINE
    ```
+
+   Make it executable: `chmod +x ~/.local/bin/ipu6-webcam-manager`
 
    Make it executable: `chmod +x ~/.local/bin/ipu6-webcam-manager`
 
@@ -165,7 +81,7 @@ Additionally, the mainline kernel IPU6 drivers lack PSYS (Processing System) sup
 
    ```ini
    [Unit]
-   Description=IPU6 Virtual Webcam Manager (On-Demand with Priming)
+   Description=IPU6 Virtual Webcam (Always-On)
    After=pipewire.service
 
    [Service]
@@ -184,19 +100,16 @@ Additionally, the mainline kernel IPU6 drivers lack PSYS (Processing System) sup
    systemctl --user enable --now ipu6-virtual-webcam.service
    ```
 
-9. Hide raw IPU6 devices from browsers (optional but recommended):
+9. Create udev rule to ensure correct permissions for IPU6 devices:
 
-   Create `/etc/udev/rules.d/60-ipu6-hide-raw-devices.rules`:
+   Create `/etc/udev/rules.d/60-ipu6-permissions.rules`:
 
    ```bash
-   # Hide raw IPU6 Bayer devices from applications, keep v4l2loopback virtual webcam visible
-   # The raw IPU6 devices only work with Intel HAL anyway, not standard V4L2 apps
+   # Ensure IPU6 raw video devices are accessible to video group
+   # Required for icamerasrc to access the camera hardware
 
-   # IPU6 raw devices - restrict to root only (hide from normal user applications)
-   SUBSYSTEM=="video4linux", ATTR{name}=="Intel IPU6 ISYS Capture*", MODE="0600", GROUP="root"
-
-   # Ensure v4l2loopback virtual webcam remains accessible
-   SUBSYSTEM=="video4linux", ATTR{name}=="IPU6 Virtual Webcam", MODE="0660", GROUP="video"
+   SUBSYSTEM=="video4linux", ATTRS{name}=="Intel IPU6 ISYS Capture ?", MODE="0660", GROUP="video"
+   SUBSYSTEM=="video4linux", ATTRS{name}=="Intel IPU6 ISYS Capture ??", MODE="0660", GROUP="video"
    ```
 
    Apply the rule:
@@ -206,28 +119,33 @@ Additionally, the mainline kernel IPU6 drivers lack PSYS (Processing System) sup
    sudo udevadm trigger --subsystem-match=video4linux
    ```
 
+   **Note:** The raw IPU6 devices will be visible in browser device lists alongside the virtual webcam. Users should select "IPU6 Virtual Webcam" when choosing a camera. Hiding these devices would break icamerasrc functionality.
+
 10. Reboot to load DKMS drivers and apply all configurations.
 
 ### How It Works
 
-- **Priming Mode (default):** GStreamer pipeline outputs black frames at 1280x720@30fps to `/dev/video42`
-  - LED is **OFF** (real camera not accessed)
-  - Minimal CPU usage
-  - Device appears functional to browsers/apps
+The solution uses a simple always-on GStreamer pipeline:
 
-- **Active Mode:** When application opens `/dev/video42`:
-  - Manager script detects access via `fuser`
-  - Stops priming pipeline
-  - Starts real camera pipeline (icamerasrc)
-  - LED turns **ON**
+- `icamerasrc` captures video from the IPU6 camera (processes raw Bayer data via Intel HAL)
+- `videoconvert` converts to standard formats
+- `v4l2sink` outputs to `/dev/video42` (v4l2loopback virtual device)
+- The pipeline runs continuously as a systemd user service
+- All applications see `/dev/video42` as a standard webcam
 
-- **Back to Priming:** When application closes device:
-  - Manager detects no external users
-  - Stops real camera pipeline
-  - Restarts priming pipeline
-  - LED turns **OFF**
+**Trade-off:** The privacy LED is always ON while the service is running. This is necessary for reliable application compatibility (especially MS Teams) which needs real camera frames for device detection.
 
-The privacy LED accurately reflects actual camera usage with ~2 second delay.
+To temporarily disable the camera, stop the service:
+
+```bash
+systemctl --user stop ipu6-virtual-webcam.service
+```
+
+To restart it:
+
+```bash
+systemctl --user start ipu6-virtual-webcam.service
+```
 
 ### Verification
 
@@ -246,25 +164,25 @@ groups | grep video
 # Verify v4l2loopback virtual device exists
 ls -la /dev/video42
 
-# Verify manager service is running
+# Verify service is running
 systemctl --user status ipu6-virtual-webcam.service
 
-# Check visible video devices (should only show video42)
+# Check visible video devices
 v4l2-ctl --list-devices
 
-# Test in browser (LED should turn on when accessing camera)
+# Test in browser (select "IPU6 Virtual Webcam" from device list)
 firefox https://webcamtests.com
 
-# Verify privacy LED turns OFF when closing camera
-# (close browser tab, wait ~2 seconds, LED should turn off)
+# Test in Teams
+# Camera should appear in Teams settings and work for video calls
 ```
 
 **Expected behavior:**
 
-- Privacy LED is OFF when idle
-- LED turns ON within 2 seconds of opening camera in application
-- LED turns OFF within 2 seconds of closing camera
-- Only `/dev/video42` appears in browser device lists (32 raw IPU6 devices hidden)
+- Privacy LED is always ON while service is running
+- Camera works in all applications (Firefox, Chrome, Teams, etc.)
+- Multiple video devices visible in browser - select "IPU6 Virtual Webcam"
+- CPU usage: ~5-10% when pipeline is running, more when actively streaming
 
 ### Troubleshooting
 
@@ -274,17 +192,17 @@ firefox https://webcamtests.com
 **Issue:** "Failed to open PSYS, error: No such file or directory"
 **Solution:** Install kernel headers and reboot to ensure DKMS modules are built and loaded.
 
-**Issue:** Virtual webcam shows "no signal" or black screen in browser
-**Solution:** Check manager service status: `systemctl --user status ipu6-virtual-webcam.service`. If failed, check logs: `journalctl --user -u ipu6-virtual-webcam.service -n 50`
-
-**Issue:** Privacy LED stays on constantly
-**Solution:** The priming pipeline should keep LED off. Verify manager script is running and in priming mode. Check if real pipeline is stuck: `ps aux | grep gst-launch`.
+**Issue:** Virtual webcam shows "no signal" or black screen
+**Solution:** Check service status: `systemctl --user status ipu6-virtual-webcam.service`. If failed, check logs: `journalctl --user -u ipu6-virtual-webcam.service -n 50`. Restart service: `systemctl --user restart ipu6-virtual-webcam.service`
 
 **Issue:** v4l2loopback module not loading
 **Solution:** Verify module is installed: `modinfo v4l2loopback`. Check config: `/etc/modules-load.d/v4l2loopback.conf` and `/etc/modprobe.d/v4l2loopback.conf`. Manual load: `sudo modprobe v4l2loopback video_nr=42`
 
-**Issue:** Multiple video devices visible in browsers
-**Solution:** Apply udev rule from step 9 to hide raw IPU6 devices. Reload: `sudo udevadm control --reload-rules && sudo udevadm trigger --subsystem-match=video4linux`
+**Issue:** MS Teams doesn't recognize camera
+**Solution:** This should not occur with the always-on pipeline. Verify the service is running and restart Teams.
+
+**Issue:** Want to disable camera LED
+**Solution:** Not possible with this solution. The LED is hardware-controlled and turns on when the sensor is active. To disable the camera entirely, stop the service: `systemctl --user stop ipu6-virtual-webcam.service`
 
 ## Alternative Options Considered
 
