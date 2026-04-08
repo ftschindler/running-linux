@@ -24,35 +24,28 @@ Additionally, the mainline kernel IPU6 drivers lack PSYS (Processing System) sup
 
 ### Installation Steps
 
-1. Install Intel IPU6 camera stack from AUR:
+1. Install kernel headers and Intel IPU6 camera stack:
 
    ```bash
+   sudo pacman -S $(pacman -Qsq '^linux[0-9]+$' | sed 's/linux/linux-headers/')
    paru -S intel-ipu6-camera-bin intel-ipu6-camera-hal-git icamerasrc-git
    ```
 
-   This also installs `intel-ipu6-dkms-git` as a dependency.
+   The first command installs headers for your currently running kernel. The AUR packages also install `intel-ipu6-dkms-git` as a dependency, and DKMS will automatically build the IPU6 PSYS module.
 
-2. Install kernel headers (required for DKMS to build modules):
-
-   ```bash
-   sudo pacman -S linux618-headers
-   ```
-
-   DKMS will automatically build and install the IPU6 PSYS module.
-
-3. Add user to `video` group (required for `/dev/ipu-psys0` access):
+2. Add user to `video` group (required for `/dev/ipu-psys0` access):
 
    ```bash
    sudo usermod -aG video $USER
    ```
 
-4. Install v4l2loopback for virtual webcam (browser/Teams compatibility):
+3. Install v4l2loopback for virtual webcam (browser/Teams compatibility):
 
    ```bash
    sudo pacman -S v4l2loopback-dkms v4l2loopback-utils
    ```
 
-5. Configure v4l2loopback module to load at boot:
+4. Configure v4l2loopback module to load at boot:
 
    ```bash
    echo "v4l2loopback" | sudo tee /etc/modules-load.d/v4l2loopback.conf
@@ -61,7 +54,7 @@ Additionally, the mainline kernel IPU6 drivers lack PSYS (Processing System) sup
 
    **Note:** The `exclusive_caps=1` parameter is critical for MS Teams compatibility. It makes the device report only Video Capture capability (not both capture and output), which allows Teams to recognize it as a proper camera device.
 
-6. Create systemd user service at `~/.config/systemd/user/ipu6-virtual-webcam.service`:
+5. Create systemd user service at `~/.config/systemd/user/ipu6-virtual-webcam.service`:
 
    ```ini
    [Unit]
@@ -78,13 +71,13 @@ Additionally, the mainline kernel IPU6 drivers lack PSYS (Processing System) sup
    WantedBy=default.target
    ```
 
-7. Enable and start the service:
+6. Enable and start the service:
 
    ```bash
    systemctl --user enable --now ipu6-virtual-webcam.service
    ```
 
-8. Create udev rule to ensure correct permissions for IPU6 devices:
+7. Create udev rule to ensure correct permissions for IPU6 devices:
 
    Create `/etc/udev/rules.d/60-ipu6-permissions.rules`:
 
@@ -105,7 +98,7 @@ Additionally, the mainline kernel IPU6 drivers lack PSYS (Processing System) sup
 
    **Note:** The raw IPU6 devices will be visible in browser device lists alongside the virtual webcam. Users should select "IPU6 Virtual Webcam" when choosing a camera. Hiding these devices would break icamerasrc functionality.
 
-9. Reboot to load DKMS drivers and apply all configurations.
+8. Reboot to load DKMS drivers and apply all configurations.
 
 ### How It Works
 
