@@ -1,7 +1,7 @@
 # ADR: Intel IPU6 Webcam Support on Dell Precision 5470
 
 **Date:** 2026-04-08
-**Status:** Proposed
+**Status:** Accepted
 **Context:** Manjaro Linux with KDE Plasma on Dell Precision 5470, Intel 12th Gen i7-12800H
 
 ## Problem Statement
@@ -14,65 +14,70 @@ The integrated webcam is not functional under Linux despite all hardware being d
 - **Kernel:** 6.18.18-1-MANJARO
 - **Firmware:** linux-firmware-intel 20260309-1 (up-to-date as of 2026-04-08)
 
-## Current Status
+## Root Cause
 
-### Currently Failing
+Intel IPU6 uses a "software ISP" architecture requiring userspace processing. The kernel drivers output raw Bayer sensor data; Intel provides closed-source binaries (`ipu6-camera-hal`, `ipu6-camera-bins`) to process this into usable video.
+
+Additionally, the mainline kernel IPU6 drivers lack PSYS (Processing System) support required by the camera HAL. DKMS out-of-tree drivers from Intel are needed.
+
+## Solution (Implemented)
+
+### Installation Steps
+
+1. Install Intel IPU6 camera stack from AUR:
+
+   ```bash
+   paru -S intel-ipu6-camera-bin intel-ipu6-camera-hal-git icamerasrc-git
+   ```
+
+   This also installs `intel-ipu6-dkms-git` as a dependency.
+
+2. Install kernel headers (required for DKMS to build modules):
+
+   ```bash
+   sudo pacman -S linux618-headers
+   ```
+
+   DKMS will automatically build and install the IPU6 PSYS module.
+
+3. Add user to `video` group (required for `/dev/ipu-psys0` access):
+
+   ```bash
+   sudo usermod -aG video $USER
+   ```
+
+4. Reboot to load DKMS drivers and apply group membership.
+
+### Verification
+
+After reboot:
 
 ```bash
-# Camera detection works
-v4l2-ctl --list-devices  # Shows ipu6 with /dev/video0-31
+# Verify DKMS module loaded
+lsmod | grep intel_ipu6_psys
 
-# But capture fails
-ffmpeg -f v4l2 -i /dev/video16 test.jpg
-# Error: Link has been severed
-```
+# Verify PSYS device exists
+ls -la /dev/ipu-psys0
 
-### After Solution Implementation
+# Verify group membership
+groups | grep video
 
-```bash
-# Check HAL installation
-ls -lh /usr/lib/libcamhal.so
-gst-inspect-1.0 icamerasrc
-
-# Test with GStreamer
-gst-launch-1.0 icamerasrc ! videoconvert ! autovideosink
+# Test camera
+gst-launch-1.0 icamerasrc ! "video/x-raw,width=1280,height=720" ! videoconvert ! autovideosink
 
 # Test in browser
 firefox https://webcamtests.com
-
-# Monitor for issues
-journalctl -b -f | grep -iE "camera|ipu6|ivsc"
 ```
 
-## Root Cause
+### Troubleshooting
 
-Intel IPU6 uses a "software ISP" architecture requiring userspace processing. The kernel drivers output raw Bayer sensor data; Intel provides closed-source binaries (`ipu6-camera-hal`, `ipu6-camera-bins`) to process this into usable video
+**Issue:** "Failed to open PSYS, error: Permission denied"
+**Solution:** Ensure user is in `video` group and has logged out/in after adding group membership.
 
-## Solution Options
+**Issue:** "Failed to open PSYS, error: No such file or directory"
+**Solution:** Install kernel headers and reboot to ensure DKMS modules are built and loaded.
 
-### Option 1: Install Intel IPU6 Camera HAL (Recommended)
-
-Install Intel's proprietary camera userspace libraries and integration layer.
-
-**Advantages:**
-
-- Full camera functionality with all ISP features
-- Works with standard applications (Firefox, Chrome, Cheese, etc.)
-- Maintained by Intel for modern laptops
-
-**Disadvantages:**
-
-- Requires AUR packages (not in official repos)
-- Proprietary binaries (~100MB download)
-- May have compatibility issues with future kernel updates
-
-**Implementation:**
-
-```bash
-paru -S intel-ipu6-camera-bin intel-ipu6-camera-hal-git icamerasrc-git
-```
-
-### Option 2: Use libcamera with IPU6 Pipeline Handler
+## Alternative Options Considered
 
 Use the open-source libcamera framework with experimental IPU6 support.
 
@@ -126,7 +131,8 @@ Extract IVSC firmware from Windows drivers.
 
 - [Arch Wiki: Webcam setup](https://wiki.archlinux.org/title/Webcam_setup)
 - [Intel IPU6 Camera HAL GitHub](https://github.com/intel/ipu6-camera-hal)
-- [Intel IPU6 Bins GitHub](https://github.com/intel/ipu6-camera-bins)
-- [AUR: ipu6-camera-bins](https://aur.archlinux.org/packages/ipu6-camera-bins)
-- [AUR: ipu6-camera-hal](https://aur.archlinux.org/packages/ipu6-camera-hal)
-- [AUR: icamerasrc](https://aur.archlinux.org/packages/icamerasrc)
+- [Intel IPU6 DKMS Drivers GitHub](https://github.com/intel/ipu6-drivers)
+- [AUR: intel-ipu6-camera-bin](https://aur.archlinux.org/packages/intel-ipu6-camera-bin)
+- [AUR: intel-ipu6-camera-hal-git](https://aur.archlinux.org/packages/intel-ipu6-camera-hal-git)
+- [AUR: intel-ipu6-dkms-git](https://aur.archlinux.org/packages/intel-ipu6-dkms-git)
+- [AUR: icamerasrc-git](https://aur.archlinux.org/packages/icamerasrc-git)
