@@ -69,7 +69,7 @@ Install Intel's proprietary camera userspace libraries and integration layer.
 **Implementation:**
 
 ```bash
-paru -S ipu6-camera-bins ipu6-camera-hal icamerasrc-git
+paru -S intel-ipu6-camera-bin intel-ipu6-camera-hal-git icamerasrc-git
 ```
 
 ### Option 2: Use libcamera with IPU6 Pipeline Handler
