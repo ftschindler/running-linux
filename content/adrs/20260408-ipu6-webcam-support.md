@@ -56,8 +56,10 @@ Additionally, the mainline kernel IPU6 drivers lack PSYS (Processing System) sup
 
    ```bash
    echo "v4l2loopback" | sudo tee /etc/modules-load.d/v4l2loopback.conf
-   echo "options v4l2loopback devices=1 video_nr=42 card_label=\"IPU6 Virtual Webcam\"" | sudo tee /etc/modprobe.d/v4l2loopback.conf
+   echo "options v4l2loopback devices=1 video_nr=42 card_label=\"IPU6 Virtual Webcam\" exclusive_caps=1" | sudo tee /etc/modprobe.d/v4l2loopback.conf
    ```
+
+   **Note:** The `exclusive_caps=1` parameter is critical for MS Teams compatibility. It makes the device report only Video Capture capability (not both capture and output), which allows Teams to recognize it as a proper camera device.
 
 6. Create systemd user service at `~/.config/systemd/user/ipu6-virtual-webcam.service`:
 
@@ -155,14 +157,17 @@ v4l2-ctl --list-devices
 # Test in browser (select "IPU6 Virtual Webcam" from device list)
 firefox https://webcamtests.com
 
-# Test in Teams
-# Camera should appear in Teams settings and work for video calls
+# Test in MS Teams
+# Open Teams > Settings > Devices > Camera
+# Select "IPU6 Virtual Webcam" from the dropdown
+# Camera preview should show live video
 ```
 
 **Expected behavior:**
 
 - Privacy LED is always ON while service is running
 - Camera works in all applications (Firefox, Chrome, Teams, etc.)
+- "IPU6 Virtual Webcam" appears in Teams camera settings
 - Multiple video devices visible in browser - select "IPU6 Virtual Webcam"
 - CPU usage: ~5-10% when pipeline is running, more when actively streaming
 
@@ -181,7 +186,7 @@ firefox https://webcamtests.com
 **Solution:** Verify module is installed: `modinfo v4l2loopback`. Check config: `/etc/modules-load.d/v4l2loopback.conf` and `/etc/modprobe.d/v4l2loopback.conf`. Manual load: `sudo modprobe v4l2loopback video_nr=42`
 
 **Issue:** MS Teams doesn't recognize camera
-**Solution:** This should not occur with the always-on pipeline. Verify the service is running and restart Teams.
+**Solution:** Ensure `exclusive_caps=1` is set in `/etc/modprobe.d/v4l2loopback.conf`. This parameter is critical for Teams to recognize the device as a proper camera. If you added it after initial setup, reload the module: `sudo modprobe -r v4l2loopback && sudo modprobe v4l2loopback`, then restart the service and Teams.
 
 **Issue:** Want to disable camera LED
 **Solution:** Not possible with this solution. The LED is hardware-controlled and turns on when the sensor is active. To disable the camera entirely, stop the service: `systemctl --user stop ipu6-virtual-webcam.service`
