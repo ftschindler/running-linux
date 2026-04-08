@@ -59,25 +59,7 @@ Additionally, the mainline kernel IPU6 drivers lack PSYS (Processing System) sup
    echo "options v4l2loopback devices=1 video_nr=42 card_label=\"IPU6 Virtual Webcam\"" | sudo tee /etc/modprobe.d/v4l2loopback.conf
    ```
 
-6. Create webcam startup script at `~/.local/bin/ipu6-webcam-manager`:
-
-   ```bash
-   #!/bin/bash
-   # IPU6 Virtual Webcam - Simple Always-On Mode
-   # Keeps real camera pipeline running continuously
-
-   VIRTUAL_DEVICE="/dev/video42"
-   PIPELINE="gst-launch-1.0 icamerasrc ! video/x-raw,width=1280,height=720 ! videoconvert ! v4l2sink device=${VIRTUAL_DEVICE}"
-
-   echo "$(date): Starting IPU6 Virtual Webcam (always-on mode)..."
-   exec $PIPELINE
-   ```
-
-   Make it executable: `chmod +x ~/.local/bin/ipu6-webcam-manager`
-
-   Make it executable: `chmod +x ~/.local/bin/ipu6-webcam-manager`
-
-7. Create systemd user service at `~/.config/systemd/user/ipu6-virtual-webcam.service`:
+6. Create systemd user service at `~/.config/systemd/user/ipu6-virtual-webcam.service`:
 
    ```ini
    [Unit]
@@ -86,7 +68,7 @@ Additionally, the mainline kernel IPU6 drivers lack PSYS (Processing System) sup
 
    [Service]
    Type=simple
-   ExecStart=%h/.local/bin/ipu6-webcam-manager
+   ExecStart=/usr/bin/gst-launch-1.0 icamerasrc ! video/x-raw,width=1280,height=720 ! videoconvert ! v4l2sink device=/dev/video42
    Restart=on-failure
    RestartSec=5
 
@@ -94,13 +76,13 @@ Additionally, the mainline kernel IPU6 drivers lack PSYS (Processing System) sup
    WantedBy=default.target
    ```
 
-8. Enable and start the service:
+7. Enable and start the service:
 
    ```bash
    systemctl --user enable --now ipu6-virtual-webcam.service
    ```
 
-9. Create udev rule to ensure correct permissions for IPU6 devices:
+8. Create udev rule to ensure correct permissions for IPU6 devices:
 
    Create `/etc/udev/rules.d/60-ipu6-permissions.rules`:
 
@@ -121,7 +103,7 @@ Additionally, the mainline kernel IPU6 drivers lack PSYS (Processing System) sup
 
    **Note:** The raw IPU6 devices will be visible in browser device lists alongside the virtual webcam. Users should select "IPU6 Virtual Webcam" when choosing a camera. Hiding these devices would break icamerasrc functionality.
 
-10. Reboot to load DKMS drivers and apply all configurations.
+9. Reboot to load DKMS drivers and apply all configurations.
 
 ### How It Works
 
