@@ -24,14 +24,20 @@ Additionally, the mainline kernel IPU6 drivers lack PSYS (Processing System) sup
 
 ### Installation Steps
 
-1. Install kernel headers and Intel IPU6 camera stack:
+1. Install kernel headers, GStreamer, and Intel IPU6 camera stack:
 
    ```bash
-   sudo pacman -S $(pacman -Qsq '^linux[0-9]+$' | sed 's/linux/linux-headers/')
+   sudo pacman -S $(pacman -Qsq '^linux[0-9]+$' | sed 's/linux/linux-headers/') gstreamer gst-plugins-base gst-plugins-good
    paru -S intel-ipu6-camera-bin intel-ipu6-camera-hal-git icamerasrc-git
    ```
 
-   The first command installs headers for your currently running kernel. The AUR packages also install `intel-ipu6-dkms-git` as a dependency, and DKMS will automatically build the IPU6 PSYS module.
+   The first command installs:
+   - Headers for your currently running kernel (required for DKMS)
+   - `gstreamer` - provides `gst-launch-1.0` command
+   - `gst-plugins-base` - provides `videoconvert` element
+   - `gst-plugins-good` - provides `v4l2sink` element
+
+   The AUR packages also install `intel-ipu6-dkms-git` as a dependency, and DKMS will automatically build the IPU6 PSYS module.
 
 2. Add user to `video` group (required for `/dev/ipu-psys0` access):
 
