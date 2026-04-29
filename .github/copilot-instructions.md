@@ -39,7 +39,7 @@ title: Your Document Title
 It should be followed by links for discussion and editing, for example:
 
 ```markdown
-> Edit this document [on Github](https://github.com/arup-group/ana-roadmap/edit/main/content/<path_to_file>)
+> Edit this document [on Github](https://github.com/ftschindler/running-linux/edit/main/content/<path_to_file>)
 ```
 
 ### Internal Linking
