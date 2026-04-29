@@ -1,6 +1,8 @@
-# Bluetooth Headset Codec Switching Issue (MSBC → SBC)
+---
+title: Bluetooth Headset Codec Switching Issue (MSBC → SBC)
+---
 
-**Date:** 2026-04-16
+- **Date:** 2026-04-16
 
 ## Problem
 

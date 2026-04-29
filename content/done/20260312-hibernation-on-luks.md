@@ -1,8 +1,9 @@
-# ADR: Hibernation Reliability on LUKS-Encrypted Systems
+---
+title: Hibernation Reliability on LUKS-Encrypted Systems
+---
 
-**Date:** 2026-03-12
-**Status:** Proposed
-**Context:** Manjaro Linux with KDE Plasma on LUKS+LVM, Intel 12th Gen i7-12800H
+- **Date:** 2026-03-12
+- **Context:** Manjaro Linux with KDE Plasma on LUKS+LVM, Intel 12th Gen i7-12800H
 
 ## Problem Statement
 

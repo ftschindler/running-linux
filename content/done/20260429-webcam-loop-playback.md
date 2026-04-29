@@ -1,8 +1,9 @@
-# ADR: Looped Virtual Webcam Playback Service
+---
+title: Looped Virtual Webcam Playback Service
+---
 
-**Date:** 2026-04-29
-**Status:** Accepted
-**Context:** Manjaro Linux with KDE Plasma on Dell Precision 5470, building upon the IPU6 virtual webcam solution
+- **Date:** 2026-04-29
+- **Context:** Manjaro Linux with KDE Plasma on Dell Precision 5470, building upon the IPU6 virtual webcam solution
 
 ## Problem Statement
 
