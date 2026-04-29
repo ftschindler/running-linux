@@ -70,6 +70,8 @@ Additionally, the mainline kernel IPU6 drivers lack PSYS (Processing System) sup
    [Service]
    Type=simple
    ExecStart=/usr/bin/gst-launch-1.0 icamerasrc ! video/x-raw,width=1280,height=720 ! videoconvert ! v4l2sink device=/dev/video42
+   KillSignal=SIGINT
+   TimeoutStopSec=10
    Restart=on-failure
    RestartSec=5
 
@@ -186,6 +188,9 @@ firefox https://webcamtests.com
 
 **Issue:** MS Teams doesn't recognize camera
 **Solution:** Ensure `exclusive_caps=1` is set in `/etc/modprobe.d/v4l2loopback.conf`. This parameter is critical for Teams to recognize the device as a proper camera. If you added it after initial setup, reload the module: `sudo modprobe -r v4l2loopback && sudo modprobe v4l2loopback`, then restart the service and Teams.
+
+**Issue:** Service fails to start after being manually stopped
+**Solution:** The service unit uses `KillSignal=SIGINT` so that GStreamer performs a graceful EOS shutdown and properly releases the v4l2loopback device. If you still encounter this, ensure your service file includes `KillSignal=SIGINT` and `TimeoutStopSec=10`. As a last resort, reload the v4l2loopback module: `sudo modprobe -r v4l2loopback && sudo modprobe v4l2loopback`, then start the service.
 
 **Issue:** Want to disable camera LED
 **Solution:** Not possible with this solution. The LED is hardware-controlled and turns on when the sensor is active. To disable the camera entirely, stop the service: `systemctl --user stop ipu6-virtual-webcam.service`
