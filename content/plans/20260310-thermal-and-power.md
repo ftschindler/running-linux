@@ -1,8 +1,9 @@
-# ADR: Power and Thermal Management Strategy
+---
+title: Power and Thermal Management Strategy
+---
 
-**Date:** 2026-03-10
-**Status:** Proposed
-**Context:** Manjaro Linux with KDE Plasma on LUKS+LVM, Intel 12th Gen i7-12800H
+- **Date:** 2026-03-10
+- **Context:** Manjaro Linux with KDE Plasma on LUKS+LVM, Intel 12th Gen i7-12800H
 
 ## Problem Statement
 
