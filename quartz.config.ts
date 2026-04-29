@@ -10,7 +10,7 @@ const development = process.env.NODE_ENV === 'development'
  */
 const config: QuartzConfig = {
   configuration: {
-    pageTitle: "ANA roadmap",
+    pageTitle: "ftschindler: Running Linux",
     pageTitleSuffix: "",
     enableSPA: true,
     enablePopovers: true,
@@ -18,7 +18,7 @@ const config: QuartzConfig = {
       provider: "null",
     },
     locale: "en-GB",
-    baseUrl: development ? "localhost:8080" : "super-chainsaw-1pye4nv.pages.github.io",
+    baseUrl: development ? "localhost:8080" : "ftschindler.github.io/running-linux",
     ignorePatterns: [".*"],
     defaultDateType: "modified",
     generateSocialImages: false,
