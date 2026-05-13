@@ -67,6 +67,8 @@ Additionally, the mainline kernel IPU6 drivers lack PSYS (Processing System) sup
    [Unit]
    Description=IPU6 Virtual Webcam (Always-On)
    After=pipewire.service
+   StartLimitBurst=5
+   StartLimitIntervalSec=30
 
    [Service]
    Type=simple
@@ -79,6 +81,11 @@ Additionally, the mainline kernel IPU6 drivers lack PSYS (Processing System) sup
    [Install]
    WantedBy=default.target
    ```
+
+   **Note:** `StartLimitBurst=5` and `StartLimitIntervalSec=30` ensure that after 5
+   consecutive failures within 30 seconds, systemd stops retrying and marks the unit as
+   `failed`. This avoids an endless restart loop when the camera hardware is inaccessible
+   (e.g. after resuming from hibernate).
 
 6. Enable and start the service:
 
