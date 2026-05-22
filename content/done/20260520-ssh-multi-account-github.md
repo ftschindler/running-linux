@@ -144,7 +144,3 @@ Because this happens at the transport layer, it is invisible to any tooling buil
 - [GitHub Docs: Adding a new SSH key to your account](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account)
 - [Git Documentation: url.\<base\>.insteadOf](https://git-scm.com/docs/git-config#Documentation/git-config.txt-urlltbasegtinsteadOf)
 - [GitHub Docs: About Enterprise Managed Users](https://docs.github.com/en/enterprise-cloud@latest/admin/identity-and-access-management/understanding-iam-for-enterprises/about-enterprise-managed-users)
-
-## See Also
-
-- [URL Dispatcher for Multiple Browsers](20260520-url-dispatcher-for-multiple-browsers.md) - companion setup for routing GitHub URLs to the correct browser per account
