@@ -160,21 +160,26 @@ my-pkb/
 │   ├── some_topic.md                  # plain Markdown, standard [text](path.md) links
 │   └── diagrams/
 │       └── architecture.excalidraw    # single source of truth per diagram
+├── .scripts/                          # pre-commit helper scripts
+│   └── check_excalidraw_settings.py   # validates Excalidraw plugin config
 ├── mkdocs.yml                         # MkDocs configuration
 ├── pyproject.toml                     # Python dependencies (managed by uv)
 ├── uv.lock                            # deterministic dependency resolution
 ├── .python-version                    # Python version pinning (e.g. 3.12)
 ├── .gitattributes                     # LFS rules
+├── .gitignore                         # includes .obsidian/ selective tracking
 ├── .pre-commit-config.yaml            # lint + format + guards
 ├── .markdownlint-cli2.jsonc           # markdownlint rules
 ├── .pymarkdown.json                   # pymarkdown rules
 ├── .markdown_link_check_config.json   # link checker config
 ├── .obsidian/                         # shipped Obsidian vault config
-│   ├── app.json                       # useMarkdownLinks: true
-│   ├── community-plugins.json         # enabled plugins
+│   ├── app.json                       # useMarkdownLinks, attachmentFolderPath
+│   ├── backlink.json                  # backlink pane configuration
+│   ├── community-plugins.json         # enabled community plugins
+│   ├── core-plugins.json              # enabled/disabled core plugins
 │   └── plugins/
 │       └── obsidian-excalidraw-plugin/
-│           └── data.json              # plugin settings (file format, no auto-export)
+│           └── data.json              # plugin settings (file format, embeds, no auto-export)
 ├── .github/
 │   └── workflows/
 │       └── deploy.yml                 # build + deploy
@@ -255,9 +260,10 @@ markdown_extensions:
 
 ### Obsidian Excalidraw Plugin Configuration
 
-Enforced via shipped `.obsidian/plugins/obsidian-excalidraw-plugin/data.json`. Contributors
-opening the folder as a vault get the correct settings automatically — no manual configuration
-needed.
+Enforced via shipped `.obsidian/plugins/obsidian-excalidraw-plugin/data.json` and validated by a
+pre-commit hook. Contributors opening the folder as a vault get the correct settings
+automatically — no manual configuration needed. However, the Excalidraw plugin itself must be
+installed manually (see below).
 
 ### `.obsidian/app.json`
 
@@ -266,9 +272,15 @@ defaults:
 
 ```json
 {
-  "useMarkdownLinks": true
+  "useMarkdownLinks": true,
+  "attachmentFolderPath": "./"
 }
 ```
+
+| Setting | Value | Why |
+|---|---|---|
+| `useMarkdownLinks` | `true` | Obsidian's link autocomplete generates standard Markdown links (`[text](path.md)`) instead of wiki-links (`[[path]]`) |
+| `attachmentFolderPath` | `"./"` | New attachments (including Excalidraw drawings) are created in the same folder as the active file, not at the vault root. This keeps diagrams alongside the Markdown files that reference them |
 
 ### `.obsidian/community-plugins.json`
 
@@ -278,23 +290,86 @@ Tells Obsidian which community plugins are enabled:
 ["obsidian-excalidraw-plugin"]
 ```
 
+### `.obsidian/` Version Control
+
+The `.obsidian/` directory contains a mix of shared configuration (safe to track) and
+device-specific state (must be ignored). The `.gitignore` ignores everything by default, then
+explicitly allows shared files:
+
+```gitignore
+# Obsidian: ignore everything by default, then allow shared config
+.obsidian/*
+!.obsidian/app.json
+!.obsidian/backlink.json
+!.obsidian/community-plugins.json
+!.obsidian/core-plugins.json
+!.obsidian/plugins/
+.obsidian/plugins/*
+!.obsidian/plugins/obsidian-excalidraw-plugin/
+.obsidian/plugins/obsidian-excalidraw-plugin/*
+!.obsidian/plugins/obsidian-excalidraw-plugin/data.json
+```
+
+**Tracked files** (shared configuration):
+
+| File | Purpose |
+|---|---|
+| `app.json` | Markdown link format, attachment folder |
+| `backlink.json` | Backlink pane configuration |
+| `community-plugins.json` | List of enabled community plugins |
+| `core-plugins.json` | Enabled/disabled core plugins |
+| `plugins/obsidian-excalidraw-plugin/data.json` | Excalidraw plugin settings |
+
+**Ignored files** (device-specific or auto-downloaded):
+
+| File | Why |
+|---|---|
+| `workspace.json` | Editor state (open tabs, pane layout, cursor positions) — causes merge conflicts |
+| `plugins/*/main.js` | Plugin runtime code — auto-downloaded from community registry |
+| `plugins/*/manifest.json` | Plugin metadata — redundant with `community-plugins.json` |
+| `plugins/*/styles.css` | Plugin styles — included in plugin download |
+| `cache/` | Internal cache — regenerated automatically |
+
+**Gotcha — Obsidian does not auto-install plugins:** When a contributor opens the vault for the
+first time, Obsidian reads `community-plugins.json` but silently ignores entries for plugins that
+are not installed. There is no installation prompt or error notification. Contributors must
+manually install the Excalidraw plugin via **Settings > Community plugins**. Document this in
+a setup guide within the repository.
+
 ### `.obsidian/plugins/obsidian-excalidraw-plugin/data.json`
 
 ```json
 {
-  "useExcalidrawExtension": true,
+  "compatibilityMode": true,
+  "compress": false,
   "autoexportSVG": false,
   "autoexportPNG": false,
-  "compatibilityMode": false
+  "embedWikiLink": false
 }
 ```
 
 | Setting | Value | Why |
 |---|---|---|
-| `useExcalidrawExtension` | `true` | Saves as `.excalidraw` (standard JSON) not `.excalidraw.md` (Obsidian-specific) |
+| `compatibilityMode` | `true` | Saves as `.excalidraw` (standard JSON), editable on excalidraw.com. Despite the name, this is the setting that produces the portable format — without it, files are saved as `.excalidraw.md` (Obsidian-specific markdown wrapper) regardless of other settings |
+| `compress` | `false` | Prevents zlib compression of drawing data. Compressed data requires the `.excalidraw.md` wrapper format, which is incompatible with `mkdocs-excalidraw` |
 | `autoexportSVG` | `false` | Rendering handled client-side by `mkdocs-excalidraw`; no exported SVGs to keep in sync |
 | `autoexportPNG` | `false` | Same reasoning — no pre-rendered exports |
-| `compatibilityMode` | `false` | Standard Excalidraw format, editable on excalidraw.com |
+| `embedWikiLink` | `false` | When the plugin embeds a drawing into a document, use standard Markdown syntax (`![](drawing.excalidraw)`) instead of Obsidian wiki-link syntax (`![[drawing.excalidraw]]`). Wiki-link embeds are not valid Markdown and break the MkDocs build |
+
+**Gotcha — misleading setting names:** The plugin's setting names are counterintuitive.
+`compatibilityMode` sounds like a fallback, but it is the _only_ way to get standard `.excalidraw`
+output. `useExcalidrawExtension` (which appears in the plugin's full config) does _not_ control
+the `.excalidraw` extension — with `useExcalidrawExtension: true`, files are saved as
+`.excalidraw.md` (Obsidian wrapper with the `.excalidraw` extension prefix). The
+[source code](https://github.com/zsviczian/obsidian-excalidraw-plugin/blob/2bfb381/src/utils/fileUtils.ts#L133-L145)
+confirms this logic.
+
+**Gotcha — compression forces `.excalidraw.md`:** Even with `compatibilityMode: true`, if
+`compress` is `true` (the plugin's default), drawing data is zlib-compressed and stored in a
+fenced `compressed-json` code block inside an `.excalidraw.md` file. Always set `compress: false`.
+
+A pre-commit hook (`check-excalidraw-settings`) validates these settings on every commit — see
+below.
 
 ### [`.pre-commit-config.yaml`](https://pre-commit.com/)
 
@@ -361,6 +436,12 @@ repos:
         entry: '!\[\['
         language: pygrep
         files: '\.md$'
+      - id: check-excalidraw-settings
+        name: Check Excalidraw plugin settings for mkdocs compatibility
+        entry: uv run --script .scripts/check_excalidraw_settings.py
+        language: system
+        pass_filenames: false
+        files: '^\.obsidian/plugins/obsidian-excalidraw-plugin/data\.json$'
 
   # -- General file hygiene (should go last as it fixes line endings) --
 
@@ -392,6 +473,7 @@ repos:
 | Schema | [`check-jsonschema`](https://github.com/python-jsonschema/check-jsonschema) | Validates linter config against upstream schema |
 | CI lint | [`actionlint`](https://github.com/rhysd/actionlint) | Catches GitHub Actions workflow errors |
 | Guard | `no-obsidian-embeds` (local) | Prevents `![[embed]]` syntax entering the repo |
+| Guard | `check-excalidraw-settings` (local) | Validates Excalidraw plugin settings (`compatibilityMode`, `compress`, `autoexportSVG`, `autoexportPNG`, `embedWikiLink`) against required values for `mkdocs-excalidraw` compatibility |
 | Hygiene | [`pre-commit-hooks`](https://github.com/pre-commit/pre-commit-hooks) | Trailing whitespace, LF line endings, large files, BOM removal |
 
 **Configuration files to ship:**
