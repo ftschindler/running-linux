@@ -80,12 +80,17 @@ Host github-foo-org
 Add to `~/.gitconfig` (or use `git config --global`):
 
 ```ini
+[url "git@github.com:"]
+    insteadOf = https://github.com/
+
 [url "git@github-foo-org:FOO_ORG/"]
     insteadOf = https://github.com/FOO_ORG/
     insteadOf = git@github.com:FOO_ORG/
 ```
 
-This rewrites any URL under the `FOO_ORG` organisation - whether HTTPS or SSH - to route through the `github-foo-org` host alias, which selects the EMU key. All other `github.com` URLs use the default host entry with the personal key.
+The first rule rewrites all `https://github.com/` URLs to SSH. The second rule is more specific and takes precedence for `FOO_ORG` URLs (Git applies the longest-matching `insteadOf`), routing them through the `github-foo-org` host alias to select the EMU key. All other `github.com` URLs use the default SSH host entry with the personal key.
+
+This ensures that submodules, dependencies and any other tooling that generates HTTPS URLs will transparently use SSH authentication.
 
 ### Verification
 
@@ -112,6 +117,9 @@ git ls-remote git@github.com:your-username/some-repo.git
 For further organisations on the same EMU account, add `insteadOf` lines:
 
 ```ini
+[url "git@github.com:"]
+    insteadOf = https://github.com/
+
 [url "git@github-foo-org:FOO_ORG/"]
     insteadOf = https://github.com/FOO_ORG/
     insteadOf = git@github.com:FOO_ORG/
@@ -126,7 +134,7 @@ For a separate account with its own key, add another SSH host alias and correspo
 
 The mechanism operates at two layers:
 
-1. **Git layer** (`insteadOf`): Before any network operation, Git rewrites the remote URL. An HTTPS URL like `https://github.com/FOO_ORG/repo.git` becomes `git@github-foo-org:FOO_ORG/repo.git`.
+1. **Git layer** (`insteadOf`): Before any network operation, Git rewrites the remote URL. A generic HTTPS URL like `https://github.com/user/repo.git` becomes `git@github.com:user/repo.git`, whilst a more specific match like `https://github.com/FOO_ORG/repo.git` becomes `git@github-foo-org:FOO_ORG/repo.git` (Git applies the longest-matching `insteadOf`).
 2. **SSH layer** (host alias): SSH resolves `github-foo-org` via `~/.ssh/config`, connecting to `github.com` but presenting the EMU key.
 
 Because this happens at the transport layer, it is invisible to any tooling built on top of Git.
