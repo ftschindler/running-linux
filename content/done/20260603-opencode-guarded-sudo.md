@@ -213,6 +213,5 @@ Replace `ksshaskpass` in the askpass wrapper with your desktop's equivalent:
 
 ## References
 
-- [OpenCode stack overview](20260520-opencode-stack.md) — full context on the broader tooling setup
 - [OpenCode plugin SDK](https://opencode.ai) — custom tool authoring documentation
 - [`ksshaskpass` on KDE](https://invent.kde.org/plasma/ksshaskpass) — the underlying GUI password prompt
