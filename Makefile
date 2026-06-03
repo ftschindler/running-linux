@@ -1,34 +1,18 @@
-.PHONY: all build serve clean
+.PHONY: help bootstrap site serve
 
-all: bootstrap build
+## Show available targets
+help:
+	@grep -B1 '^[a-z]' $(MAKEFILE_LIST) | grep '^##' | sed 's/## /  /'
 
-build: bootstrap
-	@echo "building site ..."
-	@npx quartz build -o _site -v
-	@echo "site available in _site/ or via 'make serve'"
+## Install dependencies and pre-commit hooks
+bootstrap:
+	uv sync
+	uv run prek install
 
-serve: bootstrap
-	@echo "building and serving site ..."
-	NODE_ENV=development npx quartz build -o _site -v --serve
+## Build the static site into site/
+site:
+	NO_MKDOCS_2_WARNING=true uv run mkdocs build --strict
 
-bootstrap: .bootstrapped
-
-.quartz/README.md:
-	@echo "Initializing git submodules..."
-	@git submodule update --init
-
-.bootstrapped: .quartz/README.md
-	@echo -n "pulling quartz infrastructure out of .quartz ... "
-	@cd .quartz && for file in $$(ls *.ts *.json) .node-version .npmrc .prettierignore .prettierrc quartz; do \
-		if [ ! -e ../$$file ]; then \
-			cp -r $$file ../; \
-		fi \
-	done
-	@echo "done"
-	@echo "installing quartz with dependencies ..."
-	@npm ci
-	@touch .bootstrapped
-	@echo "run 'make build' or 'make serve' next"
-
-clean:
-	rm -rf _site .bootstrapped
+## Start the live-reloading dev server
+serve:
+	NO_MKDOCS_2_WARNING=true uv run mkdocs serve

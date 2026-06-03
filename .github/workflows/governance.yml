@@ -1,0 +1,122 @@
+---
+name: 🩺
+
+permissions:
+  contents: read
+  pull-requests: read
+
+on:
+  pull_request:
+
+concurrency:
+  group: governance_${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  governance:
+    name: Governance checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    defaults:
+      run:
+        shell: bash -elo pipefail {0}
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+    - name: Setup Python
+      id: setup-python
+      uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
+      with:
+        python-version-file: .python-version
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b  # v8.1.0
+      with:
+        python-version: ${{ steps.setup-python.outputs.python-version }}
+
+    - name: Install dependencies
+      run: |
+        uv sync --extra ci
+        echo "$GITHUB_WORKSPACE/.venv/bin" >> "$GITHUB_PATH"
+
+    - name: Cache prek environments
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae  # v5.0.5
+      with:
+        path: ~/.cache/prek
+        key: prek|${{ steps.setup-python.outputs.python-version }}|${{ hashFiles('.pre-commit-config.yaml') }}
+        restore-keys: |
+          prek|${{ steps.setup-python.outputs.python-version }}
+          prek
+
+    - name: Allow Chrome sandbox
+      run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+
+    - name: Run pre-commit hooks
+      run: >
+        uv run --frozen --all-groups --all-extras prek run --show-diff-on-failure --color=always --all-files
+
+      shell: bash
+      env:
+        DOCKER_HOST: docker_intentionally_disabled
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Block Autosquash Commits
+      if: ${{ !github.event.pull_request.draft }}
+      shell: python {0}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      run: |-
+        from github import Github
+        import os
+        import sys
+
+        repo_name = os.environ['GITHUB_REPOSITORY']
+        head_sha = os.environ['HEAD_SHA']
+        base_sha = os.environ['BASE_SHA']
+        g = Github(os.environ["GITHUB_TOKEN"])
+        blocked_words = ["fixup!", "squash!",]
+        repo = g.get_repo(repo_name)
+        head_commit = repo.get_commit(head_sha)
+        base_commit = repo.get_commit(base_sha)
+        commits = repo.compare(base_commit.sha, head_commit.sha).commits
+        for commit in commits:
+            commit_msg = commit.commit.message
+            if any(word in commit_msg for word in blocked_words):
+                print(f"::error::Commit message contains blocked word: {commit_msg}")
+                print("Please squash your commits before merging")
+                sys.exit(1)
+
+    - name: Block merge commits
+      shell: python {0}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+      run: |-
+        import requests
+        import os
+        import sys
+
+        headers = {'Authorization': f'token {os.environ["GITHUB_TOKEN"]}'}
+        repo = os.environ["GITHUB_REPOSITORY"]
+        pr = os.environ["PR_NUMBER"]
+        url = f'https://api.github.com/repos/{repo}/pulls/{pr}/commits'
+        response = requests.get(url, headers=headers)
+        if response.status_code != 200:
+          print(f'::error::This should not happen: failed to get commits for PR {pr}!')
+          sys.exit(1)
+        commits = response.json()
+        while 'link' in response.headers and 'next' in response.links:
+            response = requests.get(response.links['next']['url'], headers=headers)
+            if response.status_code != 200:
+              print(f'::error::This should not happen: failed to get commits for PR {pr}!')
+              sys.exit(1)
+            commits.extend(response.json())
+        for commit in commits:
+            if len(commit['parents']) > 1:
+                raise RuntimeError(
+                    f'::error::Merge commits ({commit["sha"]}) are not allowed on PR branches, '
+                    'please rebase to resolve this!')

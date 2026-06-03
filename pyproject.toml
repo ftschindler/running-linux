@@ -1,0 +1,24 @@
+[project]
+name = "running-linux-pkb"
+version = "0.1.0"
+requires-python = ">=3.13"  # ensure to have this in line with .python-version
+dependencies = [
+    # MkDocs 2.0 removes the plugin system and is incompatible with Material for MkDocs.
+    # Pin to <2 until Zensical (https://zensical.org/) is ready as a drop-in replacement.
+    # See: https://squidfunk.github.io/mkdocs-material/blog/2026/02/18/mkdocs-2.0/
+    "mkdocs>=1.6,<2",
+    "mkdocs-awesome-pages-plugin",
+    "mkdocs-backlinks-section-plugin",
+    "mkdocs-excalidraw",
+    "mkdocs-glightbox",
+    "mkdocs-material",
+    "mkdocs-obsidian-support-plugin",
+]
+[project.optional-dependencies]
+ci = [
+    "requests",
+    "pygithub",
+]
+
+[dependency-groups]
+dev = ["prek"]

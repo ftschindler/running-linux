@@ -1,15 +1,21 @@
 # GitHub Copilot Instructions
 
 This repository contains Felix' personal notes on running Linux in various circumstances.
-It is implemented as a Quartz-based static site generator with markdown content in the `content/` directory.
+It is implemented as a MkDocs-based static site generator with Material for MkDocs theme and markdown content in the `docs/` directory.
 
-## Technical Guidelines
+## General Guidelines
 
-- Make use of pre-commit, see [.pre-commit-config.yaml](../.pre-commit-config.yaml) for details.
-- Follow the markdownlint and PyMarkdown configurations defined in [.markdownlint-cli2.jsonc](../.markdownlint-cli2.jsonc) and [.pymarkdown.json](../.pymarkdown.json) respectively.
-- The site is built using Quartz, refer to the [README.md](../README.md) for further instructions.
+This site relies on an interplay of many tools, and we can only make use of the subset of Markdown features that are supported by mkdocs, obsidian, markdownlint-cli2 and pymarkdown.
+When creating new content, ensure to check if Markdown features work across all tools.
+If not, add a corresponding pre-commit hook to prohibit addition and document the exception.
+
+- Follow the [Local Dev Environment](../docs/meta/local_dev_environment.md) guidance.
+- Ensure to run `prek` and respect linting and formatting as defined in [.pre-commit-config.yaml](../.pre-commit-config.yaml).
 
 ## Content Guidelines
+
+- Follow the [Editing Conventions](../docs/meta/editing_conventions.md).
+- When creating or editing content, prioritise creating a coherent, well-connected knowledge base whilst maintaining high standards of British English and technical accuracy.
 
 ### Language and Grammar
 
@@ -22,7 +28,7 @@ It is implemented as a Quartz-based static site generator with markdown content 
 
 ### File Structure and Naming
 
-- All content files must be in the `content/` directory
+- All content files must be in the `docs/` directory
 - Use lowercase filenames with underscore for spaces (e.g., `some_file.md`)
 - Store assets like `image.jpg` required for an entry `foo.md` in a subdirectory `foo/image.jpg`.
 
@@ -34,12 +40,6 @@ Every markdown file must start with YAML frontmatter containing at least a title
 ---
 title: Your Document Title
 ---
-```
-
-It should be followed by links for discussion and editing, for example:
-
-```markdown
-> Edit this document [on Github](https://github.com/ftschindler/running-linux/edit/main/content/<path_to_file>)
 ```
 
 ### Internal Linking

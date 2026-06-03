@@ -5,8 +5,6 @@ title: Guarded Sudo for OpenCode Agents
 - **Date:** 2026-06-03
 - **Context:** Manjaro Linux (KDE Plasma) running OpenCode with a custom plugin tool
 
-> Edit this document [on Github](https://github.com/ftschindler/running-linux/edit/main/content/done/20260603-opencode-guarded-sudo.md)
-
 ## Problem Statement
 
 OpenCode agents execute shell commands non-interactively — there is no TTY for a standard `sudo` password prompt. Agents that need elevated privileges must either run as root (dangerous) or have passwordless sudo (equally dangerous). A safe middle ground is required: the agent can _request_ privilege escalation, but the human operator must explicitly approve each request via a GUI prompt that displays **which session**, **which command** and **which working directory** is asking.

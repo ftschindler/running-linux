@@ -5,8 +5,6 @@ title: Git Multi-Identity via Conditional Includes
 - **Date:** 2026-05-21
 - **Context:** Two GitHub accounts (personal + EMU) already authenticated via SSH host aliases; need per-account `user.name` and `user.email` without manual switching
 
-> Edit this document [on Github](https://github.com/ftschindler/running-linux/edit/main/content/done/20260521-git-multi-identity.md)
-
 ## Problem Statement
 
 With [SSH-based multi-account authentication](./20260520-ssh-multi-account-github.md) in place, repositories are already routed to the correct GitHub account at the transport layer. However, Git commits still carry whichever `user.name` and `user.email` is set globally — meaning commits to EMU repositories show the personal identity (or vice versa) unless manually overridden per repository.
