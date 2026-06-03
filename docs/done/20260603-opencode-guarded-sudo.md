@@ -104,7 +104,7 @@ function buildSudoDisplay(
 
 export default tool({
   description:
-    "Execute commands with sudo -A"
+    "Execute commands with sudo -k -A"
     + " (uses GUI password prompt via askpass helper)",
   args: {
     command: tool.schema
@@ -128,7 +128,7 @@ export default tool({
     const timeout = args.timeout || 120000
 
     const proc = Bun.spawn(
-      ['bash', '-c', `sudo -A ${args.command}`],
+      ['bash', '-c', `sudo -k -A ${args.command}`],
       {
         cwd: workdir,
         env: {
