@@ -5,8 +5,6 @@ title: SSH-Based Multi-Account GitHub Authentication
 - **Date:** 2026-05-20
 - **Context:** Manjaro Linux with two GitHub accounts (personal + EMU) requiring tooling-independent auth
 
-> Edit this document [on Github](https://github.com/ftschindler/running-linux/edit/main/content/done/20260520-ssh-multi-account-github.md)
-
 ## Problem Statement
 
 With two GitHub accounts - a personal one and a work EMU (Enterprise Managed User) account tied to an organisation `FOO_ORG` - authentication needs to route to the correct account depending on the repository URL. Neither `gh auth` (supports only one account at a time) nor `ksshaskpass` for HTTPS (not picked up by all Git GUIs) provides a reliable, tooling-independent solution.

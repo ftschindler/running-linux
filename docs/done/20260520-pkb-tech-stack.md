@@ -1,8 +1,9 @@
 ---
-title: PKB Tech Stack Plan
+title: PKB Tech Stack
 ---
 
 - **Date:** 2026-05-20
+- **Status:** Implemented
 - **Context:** Planning a publishable Personal Knowledge Base (PKB) as a git-based static site
 
 ## Requirements
@@ -84,6 +85,14 @@ API and theme compatibility. The expected migration path is: `mkdocs` → `zensi
 swap, not a rewrite). Our plugin dependencies are small and simple, so adapting them if needed is
 low-effort.
 
+### Navigation: [mkdocs-awesome-pages-plugin](https://github.com/lukasgeiter/mkdocs-awesome-pages-plugin)
+
+**Why:**
+
+- Flexible navigation ordering without maintaining a full `nav:` tree in `mkdocs.yml`
+- Supports `.pages` files for per-directory ordering and titles
+- Zero configuration beyond adding the plugin to `mkdocs.yml`
+
 ### Excalidraw Rendering: [mkdocs-excalidraw](https://github.com/qdeli187/mkdocs-excalidraw)
 
 **Why:**
@@ -118,7 +127,7 @@ replaced with a custom MkDocs hook.
 Obsidian is configured via a shipped `.obsidian/app.json` with `"useMarkdownLinks": true` so that
 its link autocomplete generates standard Markdown links.
 
-**Enforced:** A pre-commit hook forbids Obsidian note embeds (`![[...]]`) which have no standard
+**Enforced:** A pre-commit hook forbids Obsidian note embeds (exclamation mark followed by `[[...]]`) which have no standard
 Markdown equivalent and would require additional build-time conversion.
 
 ### Backlinks: [mkdocs-backlinks-section-plugin](https://github.com/six-two/mkdocs-backlinks-section-plugin)
@@ -165,13 +174,13 @@ my-pkb/
 ├── mkdocs.yml                         # MkDocs configuration
 ├── pyproject.toml                     # Python dependencies (managed by uv)
 ├── uv.lock                            # deterministic dependency resolution
-├── .python-version                    # Python version pinning (e.g. 3.12)
+├── .python-version                    # Python version pinning (e.g. 3.13)
 ├── .gitattributes                     # LFS rules
 ├── .gitignore                         # includes .obsidian/ selective tracking
 ├── .pre-commit-config.yaml            # lint + format + guards
 ├── .markdownlint-cli2.jsonc           # markdownlint rules
 ├── .pymarkdown.json                   # pymarkdown rules
-├── .markdown_link_check_config.json   # link checker config
+├── .linkspector.yml                   # link checker config
 ├── .obsidian/                         # shipped Obsidian vault config
 │   ├── app.json                       # useMarkdownLinks, attachmentFolderPath
 │   ├── backlink.json                  # backlink pane configuration
@@ -182,7 +191,8 @@ my-pkb/
 │           └── data.json              # plugin settings (file format, embeds, no auto-export)
 ├── .github/
 │   └── workflows/
-│       └── deploy.yml                 # build + deploy
+│       ├── deploy.yml                 # build + deploy
+│       └── governance.yml             # pre-commit + commit hygiene on PRs
 └── README.md
 ```
 
@@ -206,12 +216,13 @@ my-pkb/
 ```toml
 [project]
 name = "my-pkb"
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 dependencies = [
     # MkDocs 2.0 removes the plugin system and is incompatible with Material for MkDocs.
     # Pin to <2 until Zensical (https://zensical.org/) is ready as a drop-in replacement.
     # See: https://squidfunk.github.io/mkdocs-material/blog/2026/02/18/mkdocs-2.0/
     "mkdocs>=1.6,<2",
+    "mkdocs-awesome-pages-plugin",
     "mkdocs-material",
     "mkdocs-obsidian-support-plugin",
     "mkdocs-backlinks-section-plugin",
@@ -243,6 +254,7 @@ theme:
 
 plugins:
   - search
+  - awesome-pages
   - obsidian-support
   - backlinks_section
   - excalidraw
@@ -278,7 +290,7 @@ defaults:
 ```
 
 | Setting | Value | Why |
-|---|---|---|
+| --- | --- | --- |
 | `useMarkdownLinks` | `true` | Obsidian's link autocomplete generates standard Markdown links (`[text](path.md)`) instead of wiki-links (`[[path]]`) |
 | `attachmentFolderPath` | `"./"` | New attachments (including Excalidraw drawings) are created in the same folder as the active file, not at the vault root. This keeps diagrams alongside the Markdown files that reference them |
 
@@ -313,7 +325,7 @@ explicitly allows shared files:
 **Tracked files** (shared configuration):
 
 | File | Purpose |
-|---|---|
+| --- | --- |
 | `app.json` | Markdown link format, attachment folder |
 | `backlink.json` | Backlink pane configuration |
 | `community-plugins.json` | List of enabled community plugins |
@@ -323,7 +335,7 @@ explicitly allows shared files:
 **Ignored files** (device-specific or auto-downloaded):
 
 | File | Why |
-|---|---|
+| --- | --- |
 | `workspace.json` | Editor state (open tabs, pane layout, cursor positions) — causes merge conflicts |
 | `plugins/*/main.js` | Plugin runtime code — auto-downloaded from community registry |
 | `plugins/*/manifest.json` | Plugin metadata — redundant with `community-plugins.json` |
@@ -349,12 +361,12 @@ a setup guide within the repository.
 ```
 
 | Setting | Value | Why |
-|---|---|---|
+| --- | --- | --- |
 | `compatibilityMode` | `true` | Saves as `.excalidraw` (standard JSON), editable on excalidraw.com. Despite the name, this is the setting that produces the portable format — without it, files are saved as `.excalidraw.md` (Obsidian-specific markdown wrapper) regardless of other settings |
 | `compress` | `false` | Prevents zlib compression of drawing data. Compressed data requires the `.excalidraw.md` wrapper format, which is incompatible with `mkdocs-excalidraw` |
 | `autoexportSVG` | `false` | Rendering handled client-side by `mkdocs-excalidraw`; no exported SVGs to keep in sync |
 | `autoexportPNG` | `false` | Same reasoning — no pre-rendered exports |
-| `embedWikiLink` | `false` | When the plugin embeds a drawing into a document, use standard Markdown syntax (`![](drawing.excalidraw)`) instead of Obsidian wiki-link syntax (`![[drawing.excalidraw]]`). Wiki-link embeds are not valid Markdown and break the MkDocs build |
+| `embedWikiLink` | `false` | When the plugin embeds a drawing into a document, use standard Markdown syntax (`![](drawing.excalidraw)`) instead of Obsidian wiki-link syntax (exclamation mark followed by `[[drawing.excalidraw]]`). Wiki-link embeds are not valid Markdown and break the MkDocs build |
 
 **Gotcha — misleading setting names:** The plugin's setting names are counterintuitive.
 `compatibilityMode` sounds like a fallback, but it is the _only_ way to get standard `.excalidraw`
@@ -374,56 +386,69 @@ below.
 ### [`.pre-commit-config.yaml`](https://pre-commit.com/)
 
 [Pre-commit](https://pre-commit.com/) hooks ensure Markdown quality and repository hygiene.
-Inspired by the hooks used in the
-[running-linux](https://github.com/ftschindler/running-linux) PKB.
+All hook revisions use full SHA pins with `# frozen:` comments for security and reproducibility.
 
 ```yaml
 repos:
+  # -- Validate as much json as we can --
+
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: f805888065fdb6162e1f800e50bb9460cbd223d6  # frozen: 0.37.2
+    hooks:
+      - id: check-jsonschema
+        name: Validate markdownlint-cli2 config schema
+        files: .markdownlint-cli2.jsonc
+        args: [--schemafile, 'https://raw.githubusercontent.com/DavidAnson/markdownlint-cli2/v0.18.1/schema/markdownlint-cli2-config-schema.json']
+
   # -- Markdown linting and canonicalisation --
 
   - repo: https://github.com/DavidAnson/markdownlint-cli2
-    rev: v0.18.1
+    rev: 996abf60411a8d954288ac9856aae7602b80cbda  # frozen: v0.22.1
     hooks:
       - id: markdownlint-cli2
         files: \.md$
         args: [--config=.markdownlint-cli2.jsonc, --fix]
 
   - repo: https://github.com/jackdewinter/pymarkdown
-    rev: v0.9.33
+    rev: 491b8945442244c6b03028a96e9a8bde9ad63400  # frozen: v0.9.37
     hooks:
       - id: pymarkdown
         name: PyMarkdown linter
         files: \.md$
-        args: [fix]
+        args: [--disable-rules, MD046, fix]
         pass_filenames: true
 
   # -- Link validation --
 
-  - repo: https://github.com/tcort/markdown-link-check
-    rev: v3.12.2
+  - repo: local
     hooks:
-      - id: markdown-link-check
-        args: [--quiet, --config=.markdown_link_check_config.json]
+      - id: linkspector
+        name: Check broken links (linkspector)
+        entry: linkspector check -c .linkspector.yml
+        language: node
+        additional_dependencies: ['@umbrelladocs/linkspector@0.5.3']
+        pass_filenames: false
+        files: \.md$
 
-  # -- YAML/JSON formatting --
+  # -- Python formatting + linting --
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: 0c7b6c989466a93942def1f84baf36ddfcd60c83  # frozen: v0.15.14
+    hooks:
+      - id: ruff-check
+      - id: ruff-format
+
+  # -- YAML formatting --
 
   - repo: https://github.com/google/yamlfmt
-    rev: v0.16.0
+    rev: 21ca5323a9c87ee37a434e0ca908efc0a89daa07  # frozen: v0.21.0
     hooks:
       - id: yamlfmt
-
-  - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.33.0
-    hooks:
-      - id: check-jsonschema
-        name: Validate markdownlint-cli2 config schema
-        files: .markdownlint-cli2.jsonc
-        args: [--schemafile, 'https://raw.githubusercontent.com/DavidAnson/markdownlint-cli2/main/schema/markdownlint-cli2-config-schema.json']
 
   # -- GitHub Actions linting --
 
   - repo: https://github.com/rhysd/actionlint
-    rev: v1.7.1
+    rev: 914e7df21a07ef503a81201c76d2b11c789d3fca  # frozen: v1.7.12
     hooks:
       - id: actionlint
 
@@ -431,6 +456,18 @@ repos:
 
   - repo: local
     hooks:
+      - id: check-mailmap
+        name: Check .mailmap for inconsistencies
+        entry: uv run --script .scripts/check_mailmap.py
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: check-python-version
+        name: Check .python-version matches pyproject.toml requires-python
+        entry: uv run --script .scripts/check_python_version.py
+        language: system
+        pass_filenames: false
+        files: '^(\.python-version|pyproject\.toml)$'
       - id: no-obsidian-embeds
         name: Forbid Obsidian note embeds
         entry: '!\[\['
@@ -442,11 +479,22 @@ repos:
         language: system
         pass_filenames: false
         files: '^\.obsidian/plugins/obsidian-excalidraw-plugin/data\.json$'
+      - id: lowercase-no-whitespace-filenames
+        name: Forbid uppercase or whitespace in filenames
+        entry: Filenames must be lowercase with no whitespace
+        language: fail
+        files: '[\sA-Z]'
+        exclude: '^(README\.md|CONTRIBUTING\.md|\.github/CODEOWNERS|LICENSE|Makefile)$'
+      - id: no-pip-install-in-workflows
+        name: Ensure Python deps for GitHub workflows are tracked in pyproject.toml
+        entry: 'pip install'
+        language: pygrep
+        files: '^\.github/.*\.ya?ml$'
 
   # -- General file hygiene (should go last as it fixes line endings) --
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c  # frozen: v6.0.0
     hooks:
       - id: trailing-whitespace
       - id: check-added-large-files
@@ -465,23 +513,27 @@ repos:
 **Purpose of each layer:**
 
 | Layer | Hook | Role |
-|---|---|---|
+| --- | --- | --- |
+| Schema | [`check-jsonschema`](https://github.com/python-jsonschema/check-jsonschema) | Validates linter config against upstream schema |
 | Markdown lint | [`markdownlint-cli2`](https://github.com/DavidAnson/markdownlint-cli2) | Structural rules (headings, lists, spacing) with auto-fix |
 | Markdown lint | [`pymarkdown`](https://github.com/jackdewinter/pymarkdown) | Complementary rules (tab handling, heading increments) with auto-fix |
-| Link validation | [`markdown-link-check`](https://github.com/tcort/markdown-link-check) | Catches broken internal links before they reach the site |
+| Link validation | [`linkspector`](https://github.com/UmbrellaDocs/linkspector) | Puppeteer-based link checking; catches broken links before they reach the site |
+| Python lint | [`ruff`](https://github.com/astral-sh/ruff) | Linting and formatting for Python scripts in `.scripts/` |
 | Format | [`yamlfmt`](https://github.com/google/yamlfmt) | Canonical YAML formatting (configs, frontmatter) |
-| Schema | [`check-jsonschema`](https://github.com/python-jsonschema/check-jsonschema) | Validates linter config against upstream schema |
 | CI lint | [`actionlint`](https://github.com/rhysd/actionlint) | Catches GitHub Actions workflow errors |
-| Guard | `no-obsidian-embeds` (local) | Prevents `![[embed]]` syntax entering the repo |
+| Guard | `check-mailmap` (local) | Detects missing or inconsistent `.mailmap` entries |
+| Guard | `check-python-version` (local) | Keeps `.python-version` in sync with `pyproject.toml` `requires-python` |
+| Guard | `no-obsidian-embeds` (local) | Prevents Obsidian embed syntax (exclamation mark followed by `[[embed]]`) entering the repo |
 | Guard | `check-excalidraw-settings` (local) | Validates Excalidraw plugin settings (`compatibilityMode`, `compress`, `autoexportSVG`, `autoexportPNG`, `embedWikiLink`) against required values for `mkdocs-excalidraw` compatibility |
+| Guard | `lowercase-no-whitespace-filenames` (local) | Enforces lowercase, no-whitespace filenames |
+| Guard | `no-pip-install-in-workflows` (local) | Ensures Python deps for CI are tracked in `pyproject.toml` |
 | Hygiene | [`pre-commit-hooks`](https://github.com/pre-commit/pre-commit-hooks) | Trailing whitespace, LF line endings, large files, BOM removal |
 
 **Configuration files to ship:**
 
 - `.markdownlint-cli2.jsonc` — markdownlint rules (disable line length, allow frontmatter title)
 - `.pymarkdown.json` — pymarkdown rules (heading increments, list spacing)
-- `.markdown_link_check_config.json` — link checker config (skip external URLs to avoid flaky
-  checks, skip `.excalidraw` references)
+- `.linkspector.yml` — link checker config (ignore `mailto:`, localhost, `.excalidraw` references)
 
 ### `.markdownlint-cli2.jsonc`
 
@@ -498,7 +550,10 @@ repos:
     // MD033: No inline HTML — disabled elements can be added here if needed
     "MD033": { "allowed_elements": [] },
     // MD041: First line should be a top-level heading — recognise frontmatter title field
-    "MD041": { "level": 1, "front_matter_title": "^\\s*title\\s*[:=]" }
+    "MD041": { "level": 1, "front_matter_title": "^\\s*title\\s*[:=]" },
+    // MD046: Code block style — disabled; MkDocs Material admonitions use indented blocks
+    // that markdownlint misidentifies as indented code blocks
+    "MD046": false
   }
 }
 ```
@@ -506,12 +561,13 @@ repos:
 **Rationale for each override:**
 
 | Rule | Override | Why |
-|---|---|---|
+| --- | --- | --- |
 | MD013 | disabled | Prose-heavy PKB content should wrap naturally; hard line breaks create noisy diffs |
 | MD028 | disabled | Obsidian callouts (`> [!note]`) produce blank lines inside blockquotes |
 | MD029 | `one_or_ordered` | Both `1. 1. 1.` (easy reordering) and `1. 2. 3.` (explicit) are acceptable |
 | MD033 | empty allow list | No inline HTML by default; add elements as needed |
 | MD041 | frontmatter-aware | Files use YAML frontmatter `title:` instead of a `#` heading on line 1 |
+| MD046 | disabled | MkDocs Material admonitions use indented blocks that markdownlint misidentifies as indented code blocks |
 
 ### `.pymarkdown.json`
 
@@ -550,7 +606,7 @@ repos:
 **Rationale for each rule:**
 
 | Rule | Setting | Why |
-|---|---|---|
+| --- | --- | --- |
 | `line-length` | disabled | Same reasoning as MD013 — prose wraps naturally |
 | `no-hard-tabs` | enabled | Spaces only; tabs render inconsistently across tools |
 | `spaces-after-list-marker` | consistent | Enforces uniform spacing within a document |
@@ -559,37 +615,38 @@ repos:
 | `blanks-around-headings` | enabled | Headings must have blank lines above/below for readability |
 | `heading-increment` | enabled | No skipping heading levels (e.g., `##` directly after `####`) |
 
-### `.markdown_link_check_config.json`
+### `.linkspector.yml`
 
-```json
-{
-    "ignorePatterns": [
-        {
-            "pattern": "^https?://",
-            "comment": "Skip external URLs — avoids flaky failures from network issues and rate limiting"
-        },
-        {
-            "pattern": "^mailto:"
-        },
-        {
-            "pattern": ".*\\.excalidraw$",
-            "comment": "Excalidraw files are rendered client-side, not resolvable as link targets"
-        }
-    ],
-    "timeout": "100ms"
-}
+[Linkspector](https://github.com/UmbrellaDocs/linkspector) is a Puppeteer-based link checker
+that validates links by rendering pages in a headless browser, catching issues that simpler
+regex-based checkers miss.
+
+```yaml
+dirs:
+  - .
+fileExtensions:
+  - md
+useGitIgnore: true
+ignorePatterns:
+  - pattern: '^mailto:'
+  - pattern: 'http://127.0.0.1:8000'
+  - pattern: '.*\.excalidraw$'
+timeout: 10000
+retryCount: 3
 ```
 
-**Rationale:**
+**Rationale for ignore patterns:**
 
-- **External URLs skipped:** External link checking is inherently flaky (rate limits, transient
-  downtime, geo-blocking). Internal link integrity is what matters for a PKB — broken cross-
-  references between pages are the real risk.
-- **`.excalidraw` ignored:** These are referenced as image sources (`![](file.excalidraw)`) and
-  rendered client-side by the plugin. The link checker cannot resolve them as document targets.
-- **100ms timeout:** Fast-fail for any remaining checks; internal file lookups should be instant.
+- **`mailto:`** — not resolvable as HTTP links.
+- **`127.0.0.1:8000`** — references to the locally served dev site.
+- **`.excalidraw`** — rendered client-side by the plugin; not resolvable as link targets.
 
-### GitHub Actions (`deploy.yml`)
+### GitHub Actions
+
+Two workflows handle CI/CD:
+
+**`deploy.yml`** — builds the site on every push and PR, deploys to GitHub Pages on push to
+`main`:
 
 ```yaml
 name: Build and Deploy
@@ -612,7 +669,6 @@ jobs:
           lfs: true
 
       - uses: astral-sh/setup-uv@v5
-        # https://github.com/astral-sh/setup-uv
 
       - name: Build site
         run: uv run mkdocs build --strict
@@ -632,12 +688,19 @@ jobs:
       - uses: actions/deploy-pages@v4
 ```
 
+**`governance.yml`** — runs all pre-commit hooks on PRs and blocks `fixup!`/`squash!` commits
+and merge commits on non-draft PRs, enforcing a clean linear history.
+
+**`dependabot.yml`** — automated weekly dependency updates for GitHub Actions, uv and
+pre-commit hooks.
+
 ## Licensing Summary
 
 | Component | Licence | Commercial Use |
-|---|---|---|
+| --- | --- | --- |
 | [MkDocs](https://github.com/mkdocs/mkdocs) | BSD-2-Clause | Free |
 | [Material for MkDocs](https://github.com/squidfunk/mkdocs-material) | MIT | Free |
+| [mkdocs-awesome-pages-plugin](https://github.com/lukasgeiter/mkdocs-awesome-pages-plugin) | MIT | Free |
 | [mkdocs-excalidraw](https://github.com/qdeli187/mkdocs-excalidraw) | MIT | Free |
 | [mkdocs-obsidian-support-plugin](https://github.com/ndy2/mkdocs-obsidian-support-plugin) | MIT | Free |
 | [mkdocs-backlinks-section-plugin](https://github.com/six-two/mkdocs-backlinks-section-plugin) | MIT | Free |

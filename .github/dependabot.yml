@@ -1,0 +1,38 @@
+---
+version: 2
+updates:
+- package-ecosystem: github-actions
+  directories:
+  - /
+  schedule:
+    interval: weekly
+  cooldown:
+    default-days: 7
+  groups:
+    all_github-actions:
+      patterns:
+      - "*"
+- package-ecosystem: uv
+  directories:
+  - /
+  versioning-strategy: lockfile-only
+  schedule:
+    interval: weekly
+  cooldown:
+    default-days: 7
+    semver-patch-days: 7
+    semver-minor-days: 7
+  groups:
+    all_uv:
+      patterns:
+      - "*"
+- package-ecosystem: pre-commit
+  directory: /
+  schedule:
+    interval: weekly
+  cooldown:
+    default-days: 7
+  groups:
+    all_pre-commit:
+      patterns:
+      - "*"

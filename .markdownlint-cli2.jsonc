@@ -1,10 +1,18 @@
 {
   "config": {
     "default": true,
+    // MD013: Line length — disabled; prose wraps naturally, enforcing length hurts readability
     "MD013": false,
+    // MD028: Blank line inside blockquote — disabled; Obsidian callouts use this pattern
     "MD028": false,
+    // MD029: Ordered list item prefix — allow both 1. 1. 1. and 1. 2. 3. styles
     "MD029": { "style": "one_or_ordered" },
+    // MD033: No inline HTML — disabled elements can be added here if needed
     "MD033": { "allowed_elements": [] },
-    "MD041": { "level": 1, "front_matter_title": "^\\s*title\\s*[:=]" }
+    // MD041: First line should be a top-level heading — recognise frontmatter title field
+    "MD041": { "level": 1, "front_matter_title": "^\\s*title\\s*[:=]" },
+    // MD046: Code block style — disabled; MkDocs Material admonitions use indented blocks
+    // that markdownlint misidentifies as indented code blocks
+    "MD046": false
   }
 }
