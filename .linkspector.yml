@@ -10,5 +10,6 @@ ignorePatterns:
 - pattern: '.*\.excalidraw$'  # Rendered client-side, not resolvable as link targets
 - pattern: '.*\.kde\.org/.*'  # Returns 403 to automated requests
 - pattern: '^https://www\.freedesktop\.org/.*'  # Returns 418 to automated requests
+- pattern: '^https://reddit\.com/.*'  # Returns 403 in CI
 timeout: 10000
 retryCount: 3
