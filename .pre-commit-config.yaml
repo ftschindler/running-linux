@@ -29,9 +29,11 @@ repos:
   hooks:
   - id: linkspector
     name: Check broken links (linkspector)
-    entry: linkspector check -c .linkspector.yml
+    # The chrome version here ...
+    entry: bash -c 'npx --yes puppeteer browsers install chrome@148.0.7778.97 && linkspector check -c .linkspector.yml'
     language: node
-    additional_dependencies: ['@umbrelladocs/linkspector@0.5.3']
+    # ... needs to match the linkspector version here.
+    additional_dependencies: ['@umbrelladocs/linkspector@0.5.3', 'puppeteer']
     pass_filenames: false
     files: \.md$
     # -- Python formatting + linting --
@@ -70,6 +72,11 @@ repos:
     name: Forbid Obsidian note embeds
     entry: '!\[\['
     language: pygrep
+    files: '\.md$'
+  - id: no-horizontal-rules
+    name: Forbid horizontal rules (---) in markdown
+    entry: uv run --script .scripts/check_no_horizontal_rules.py
+    language: system
     files: '\.md$'
   - id: check-excalidraw-settings
     name: Check Excalidraw plugin settings for mkdocs compatibility

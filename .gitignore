@@ -13,3 +13,6 @@ site/
 !.obsidian/plugins/obsidian-excalidraw-plugin/
 .obsidian/plugins/obsidian-excalidraw-plugin/*
 !.obsidian/plugins/obsidian-excalidraw-plugin/data.json
+
+# OpenCode runtime files
+.omo/

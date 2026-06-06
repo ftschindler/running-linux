@@ -2,8 +2,6 @@
 
 **Context** – This guide assumes you already have an OVHcloud AI Endpoints subscription configured in OpenCode (the "OVH" article in `content/done/20260603‑opencode‑ovh‑oh‑my‑opencode.md`). We therefore **skip all subscription questions** and directly run the Ultimate installer.
 
----
-
 ## Prerequisites
 
 1. **OpenCode** version ≥ `1.0.150` installed and on your `$PATH`.
@@ -18,8 +16,6 @@ opencode --version
 
 If the command fails, install OpenCode first (see the OVH article).
 
----
-
 ## Step 0 – Prepare a non‑interactive install
 
 Because the OVH subscription is already active we can tell the installer to **skip all subscription prompts**:
@@ -29,8 +25,6 @@ export OMO_SKIP_SUBSCRIPTIONS=1   # tell the installer to skip the subscription 
 ```
 
 > The installer also respects `--skip-auth` to bypass provider OAuth prompts.
-
----
 
 ## Step 1 – Run the Ultimate installer
 
@@ -52,8 +46,6 @@ What the command does:
 - Writes a **default** model config (all agents → `opencode/gpt-5-nano`) — the installer doesn't auto-detect OVH.
 - We will replace that default with the actual OVH models in Step 3.
 
----
-
 ## Step 2 – Verify the plugin is loaded
 
 ```bash
@@ -74,8 +66,6 @@ opencode models | grep ovhcloud
 ```
 
 You should see all the OVH models listed (`qwen3.6-27b`, `gpt-oss-120b`, `qwen3.5-9b`, `qwen3.5-397b-a17b`, etc.). If nothing shows up, run `/connect` inside OpenCode and re-authenticate OVH first.
-
----
 
 ## Step 3 – Override the default model config with OVH recommendations
 
@@ -187,8 +177,6 @@ Replace the contents of `~/.config/opencode/oh‑my‑openagent.json` (created b
 
 **Important:** After writing the config, **restart OpenCode** (exit and start a new session) so the new model mappings and Team Mode take effect.
 
----
-
 ## Step 4 – Confirm model availability
 
 ```bash
@@ -201,8 +189,6 @@ You should see at least the four primary models (`qwen3.6‑27b`, `gpt‑oss‑1
 ```bash
 opencode models refresh   # forces a fresh catalog download from OVH
 ```
-
----
 
 ## Step 5 – Quick functional test
 
@@ -218,8 +204,6 @@ echo "Fix the typo in README.md line 42" | opencode
 
 The output should indicate the agent selected the appropriate category and used the corresponding model.
 
----
-
 ## Step 6 – Team Mode (now enabled)
 
 Team Mode is oh-my-openagent's multi-agent orchestration layer. When enabled (it is, in the config above), the lead agent can spawn up to `max_parallel_members` specialist agents running **in parallel**, communicating via dedicated `team_*` tools (`team_create`, `team_send_message`, `team_task_create`, etc.).
@@ -230,8 +214,6 @@ Two skills ride on Team Mode out of the box:
 - **`security-research`** — 3 vulnerability hunters + 2 PoC engineers audit your codebase in parallel.
 
 Adjust `max_parallel_members` (1-8) in the config if needed. The `tmux_visualization` option (disabled by default) shows each member's workspace in a tmux grid.
-
----
 
 ## Summary
 

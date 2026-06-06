@@ -878,8 +878,6 @@ After implementing this plan:
 - **2026-03-10:** Initial draft - Comprehensive power and thermal management plan
 - **2026-03-10:** Added Layer 5 (Memory Management) with swap and swappiness configuration
 
----
-
 **Next Steps:**
 
 1. Review and approve this ADR
