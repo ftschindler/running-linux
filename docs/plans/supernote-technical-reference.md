@@ -5,8 +5,6 @@
 **Last Updated**: June 2026
 **Device Focus**: Supernote A5 X2 Manta, A6 X2 Nomad
 
----
-
 ## Table of Contents
 
 - [Executive Summary](#executive-summary)
@@ -18,8 +16,6 @@
 - [Official Documentation](#official-documentation)
 - [Comparison with Alternatives](#comparison-with-alternatives)
 - [Linux Setup Guide](#linux-setup-guide)
-
----
 
 ## Executive Summary
 
@@ -35,8 +31,6 @@
 | **User Repairable**   | ✅ Modular         | Replaceable battery, expandable storage  |
 
 **FOSS Rating**: ⭐⭐⭐⭐⭐ **HIGH** - Best in class for open ecosystem
-
----
 
 ## Hardware Specifications
 
@@ -82,8 +76,6 @@
 - [Supernote Manta Product Page](https://supernote.com/products/supernote-manta)
 - [Supernote EU Specs](https://supernote.eu/product/supernote-set-a5x2-manta/)
 - [Supernote X2 User Manual (PDF)](https://ib.supernote.com/x2/Manta&Nomad_V3.23.32_EN.pdf)
-
----
 
 ## File Formats
 
@@ -153,8 +145,6 @@ Each page contains:
 
 **Source**: [Supernote Support - File Formats](https://support.supernote.com/)
 
----
-
 ## Transfer Methods
 
 ### 1. Browse & Access (WiFi Local Transfer)
@@ -189,8 +179,6 @@ Each page contains:
 
 - [Transfer Files - Supernote Support](https://support.supernote.com/en_US/organizing/transfer-files)
 - [X2 Manual Section 8.6](https://ib.supernote.com/x2/Manta&Nomad_V3.23.32_EN.pdf)
-
----
 
 ### 2. USB Cable (Mass Storage)
 
@@ -238,8 +226,6 @@ ls ~/mnt/supernote/Note/
 
 - [Transfer Files - Supernote Support](https://support.supernote.com/en_US/organizing/transfer-files)
 
----
-
 ### 3. Supernote Cloud (Official)
 
 **Description**: Official cloud sync service by Ratta.
@@ -272,8 +258,6 @@ ls ~/mnt/supernote/Note/
 
 - [Supernote Cloud Support](https://cloud.supernote.com)
 - [X2 Manual Section 3.6](https://ib.supernote.com/x2/Manta&Nomad_V3.23.32_EN.pdf)
-
----
 
 ### 4. Private Cloud (Self-Hosted)
 
@@ -341,8 +325,6 @@ docker run -d \
 - [Linux Deployment Manual (PDF)](https://ib.supernote.com/private-cloud/Supernote-Private-Cloud-Deployment-Manual.pdf)
 - [Private Cloud Changelog](https://support.supernote.com/change-log/supernote-private-cloud-changelog)
 
----
-
 ### 5. Direct Transfer (Mobile App)
 
 **Description**: WiFi transfer via Supernote Partner App.
@@ -369,8 +351,6 @@ docker run -d \
 **Official Documentation**:
 
 - [Transfer Files - Supernote Support](https://support.supernote.com/en_US/organizing/transfer-files)
-
----
 
 ## Self-Hosted Private Cloud
 
@@ -466,8 +446,6 @@ server {
 
 **Source**: [Private Cloud Deployment Manual](https://ib.supernote.com/private-cloud/Supernote-Private-Cloud-Deployment-Manual.pdf) - Section 5.5
 
----
-
 ### Community Implementations
 
 #### 1. allenporter/supernote (Python)
@@ -497,8 +475,6 @@ notebook.to_pdf("output.pdf")
 
 **GitHub**: [allenporter/supernote](https://github.com/allenporter/supernote)
 
----
-
 #### 2. nickian/Supernote-Private-Cloud
 
 **Features**:
@@ -509,8 +485,6 @@ notebook.to_pdf("output.pdf")
 
 **GitHub**: [nickian/Supernote-Private-Cloud](https://github.com/nickian/Supernote-Private-Cloud)
 
----
-
 #### 3. camerahacks/super-supernote
 
 **Features**:
@@ -520,8 +494,6 @@ notebook.to_pdf("output.pdf")
 - HTTPS/SSL configuration tips
 
 **GitHub**: [camerahacks/super-supernote](https://github.com/camerahacks/super-supernote)
-
----
 
 #### 4. nickian/Supernote-Private-Cloud-PHP-Client
 
@@ -545,8 +517,6 @@ notebook.to_pdf("output.pdf")
 
 **GitHub**: [nickian/Supernote-Private-Cloud-PHP-Client](https://github.com/nickian/Supernote-Private-Cloud-PHP-Client)
 
----
-
 ## Community Tools
 
 ### File Parsers & Converters
@@ -560,8 +530,6 @@ notebook.to_pdf("output.pdf")
 | **supernote-cli**  | Python   | Markdown, PNG, OCR             | [borismus/supernote-cli](https://github.com/borismus/supernote-cli)   |
 | **snlib**          | Rust     | SVG, PNG, ImHex patterns       | [Walnut356/snlib](https://github.com/Walnut356/snlib)                 |
 | **SupernoteSharp** | C#       | PNG, PDF, SVG, TXT             | [nelinory/SupernoteSharp](https://github.com/nelinory/SupernoteSharp) |
-
----
 
 ### Tool Usage Examples
 
@@ -590,8 +558,6 @@ supernote-tool extract-text your.note output.txt
 supernote-tool analyze your.note
 ```
 
----
-
 #### supynote (Python)
 
 ```bash
@@ -610,8 +576,6 @@ supynote convert my-note.note
 # Convert all notes in directory
 supynote convert Note/ --output ~/Notes/
 ```
-
----
 
 #### sn2md (Python)
 
@@ -642,8 +606,6 @@ Convert the following image to markdown:
 """
 ```
 
----
-
 #### supernote-cli (Python)
 
 ```bash
@@ -663,8 +625,6 @@ notebook show 20260501_073927 --ocr ollama -o ~/notes/
 notebook md 20260501_073927
 ```
 
----
-
 #### snlib (Rust)
 
 ```rust
@@ -674,8 +634,6 @@ let notebook = parse_notebook("mynote.note")?;
 let png_data = export_png(&notebook, 0)?; // Page 0
 std::fs::write("output.png", png_data)?;
 ```
-
----
 
 ## Official Documentation
 
@@ -688,8 +646,6 @@ std::fs::write("output.png", png_data)?;
 | **X2 User Manual**     | [ib.supernote.com/x2/Manta&Nomad_V3.23.32_EN.pdf](https://ib.supernote.com/x2/Manta&Nomad_V3.23.32_EN.pdf) | PDF    |
 | **Support Centre**     | [support.supernote.com](https://support.supernote.com)                                                     | Web    |
 
----
-
 ### Transfer & Sync
 
 | Document                  | URL                                                                                                                                                                    | Format |
@@ -699,8 +655,6 @@ std::fs::write("output.png", png_data)?;
 | **Partner App (Desktop)** | [support.supernote.com/Tools-Features/supernote-partner-app-for-desktop](https://support.supernote.com/Tools-Features/supernote-partner-app-for-desktop)               | Web    |
 | **Supernote Cloud**       | [cloud.supernote.com](https://cloud.supernote.com)                                                                                                                     | Web    |
 
----
-
 ### Private Cloud
 
 | Document                | URL                                                                                                                                                                                                                                | Format |
@@ -709,8 +663,6 @@ std::fs::write("output.png", png_data)?;
 | **Docker Deployment**   | [ib.supernote.com/private-cloud/Supernote-Private-Cloud-Manual-Deployment-Method-Using-Docker-Containers.pdf](https://ib.supernote.com/private-cloud/Supernote-Private-Cloud-Manual-Deployment-Method-Using-Docker-Containers.pdf) | PDF    |
 | **Linux Deployment**    | [ib.supernote.com/private-cloud/Supernote-Private-Cloud-Deployment-Manual.pdf](https://ib.supernote.com/private-cloud/Supernote-Private-Cloud-Deployment-Manual.pdf)                                                               | PDF    |
 | **Changelog**           | [support.supernote.com/change-log/supernote-private-cloud-changelog](https://support.supernote.com/change-log/supernote-private-cloud-changelog)                                                                                   | Web    |
-
----
 
 ### Developer Documentation
 
@@ -722,16 +674,12 @@ std::fs::write("output.png", png_data)?;
 | **Element Types**  | [docs.supernote.com/zh/api-reference/supernote-plugin/types/trail](https://docs.supernote.com/zh/api-reference/supernote-plugin/types/trail)         | Web (Chinese) |
 | **LLM Index**      | [docs.supernote.com/llms.txt](https://docs.supernote.com/llms.txt)                                                                                   | Text          |
 
----
-
 ### Software Updates
 
 | Document             | URL                                                                                                                                                                | Format |
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
 | **Change Log**       | [support.supernote.com/en_US/change-log](https://support.supernote.com/en_US/change-log)                                                                           | Web    |
 | **Roadmap (Trello)** | [trello.com/b/l0COP24j/supernote-a5-x-a6-x-manta-nomad-software-roadmap-2025](https://trello.com/b/l0COP24j/supernote-a5-x-a6-x-manta-nomad-software-roadmap-2025) | Web    |
-
----
 
 ## Comparison with Alternatives
 
@@ -753,8 +701,6 @@ std::fs::write("output.png", png_data)?;
 | **Writing Feel**       | 9.5/10             | 9.0/10            | 7.0/10             | 6.0/10           |
 | **FOSS Rating**        | ⭐⭐⭐⭐⭐ HIGH    | ⭐⭐⭐⭐ HIGH     | ⭐⭐⭐ MEDIUM      | ⭐ LOW           |
 
----
-
 ### FOSS Format Comparison
 
 | Format      | Device     | Openness              | Tools      | Export Options         |
@@ -763,8 +709,6 @@ std::fs::write("output.png", png_data)?;
 | **.rm**     | reMarkable | ✅ Reverse-engineered | 10+ tools  | PDF, SVG, PNG          |
 | **PDF/PNG** | Boox       | ✅ Standard formats   | ADB/MTP    | Native export          |
 | **.nbk**    | Kindle     | ❌ Encrypted          | None       | PDF (cloud only)       |
-
----
 
 ### Sync Method Comparison
 
@@ -776,8 +720,6 @@ std::fs::write("output.png", png_data)?;
 | **Local WiFi**        | ✅ Browse & Access         | ❌ No               | ⚠️ Android sharing | ❌ No             |
 | **USB**               | ✅ MTP                     | ✅ SSH              | ⚠️ MTP             | ❌ No             |
 | **Offline Sync**      | ✅ Private Cloud           | ❌ Cloud required   | ⚠️ Manual          | ❌ Cloud required |
-
----
 
 ## Linux Setup Guide
 
@@ -793,8 +735,6 @@ pip install supernote-tool supynote sn2md
 # Install Rust tools (optional, for snlib)
 cargo install snlib
 ```
-
----
 
 ### USB Transfer Setup
 
@@ -818,8 +758,6 @@ ls ~/mnt/supernote/Note/
 fusermount -u ~/mnt/supernote
 ```
 
----
-
 ### WiFi Transfer Setup
 
 ```bash
@@ -831,8 +769,6 @@ firefox http://192.168.1.50:8080
 
 # 3. Upload/download files via web interface
 ```
-
----
 
 ### Private Cloud Setup (Docker)
 
@@ -867,8 +803,6 @@ firefox http://localhost:19072
 # Login with admin credentials
 ```
 
----
-
 ### Convert .note to PDF
 
 ```bash
@@ -886,8 +820,6 @@ notebook.to_pdf("output.pdf")
 EOF
 ```
 
----
-
 ### Convert .note to Markdown (with OCR)
 
 ```bash
@@ -901,8 +833,6 @@ notebook show my-note --ocr ollama -o ~/Notes/
 # Using supynote
 supynote convert my-note.note --format markdown
 ```
-
----
 
 ### Backup Strategy
 
@@ -941,8 +871,6 @@ EOF
 chmod +x ~/scripts/backup-supernote.sh
 ```
 
----
-
 ## Quick Reference
 
 ### Port Summary
@@ -953,8 +881,6 @@ chmod +x ~/scripts/backup-supernote.sh
 | 19072 | Private Cloud HTTP      | HTTP      | Web interface, manual sync |
 | 19443 | Private Cloud HTTPS     | HTTPS     | Secure web access          |
 | 18072 | Private Cloud auto-sync | WebSocket | Automatic background sync  |
-
----
 
 ### File Paths
 
@@ -967,8 +893,6 @@ chmod +x ~/scripts/backup-supernote.sh
 | `/SCREENSHOT/` | Screenshots                      |
 | `/MyStyle/`    | Custom templates, themes         |
 
----
-
 ### Keyboard Shortcuts (Device)
 
 | Gesture               | Action     |
@@ -978,8 +902,6 @@ chmod +x ~/scripts/backup-supernote.sh
 | Two-finger tap        | Eraser     |
 | Long press sidebar    | Quick menu |
 | Swipe from edge       | Page turn  |
-
----
 
 ## Resources
 
@@ -998,8 +920,6 @@ chmod +x ~/scripts/backup-supernote.sh
 - **Private Cloud Guide**: [camerahacks/super-supernote](https://github.com/camerahacks/super-supernote)
 - **Format Analysis**: [walnut356.github.io/posts/inspecting-the-supernote-note-format](https://walnut356.github.io/posts/inspecting-the-supernote-note-format/)
 
----
-
 ## Conclusion
 
 **Supernote** stands out as the most FOSS-friendly e-ink note-taking device available in 2026:
@@ -1012,8 +932,6 @@ chmod +x ~/scripts/backup-supernote.sh
 ✅ **Offline functionality** (handwriting recognition, local sync)
 
 For Linux users prioritising data ownership, local control and open ecosystems, Supernote is the **recommended choice** over reMarkable, Boox or Kindle Scribe.
-
----
 
 **Document Version**: 1.0
 **Created**: June 2026
