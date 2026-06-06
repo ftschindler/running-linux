@@ -50,6 +50,40 @@ Or use the Makefile shortcut, which also syncs dependencies:
 make bootstrap
 ```
 
+### Using **prek** manually
+
+Once the repository is bootstrapped you can invoke any of the supported prek commands directly via `uv run`:
+
+* **Run all configured hooks on the current tree**
+
+  ```bash
+  uv run prek run --all-files
+  ```
+
+* **Run a specific hook** (e.g. `ruff-check`)
+
+  ```bash
+  uv run prek run ruff-check
+  ```
+
+* **Show which hooks are configured**
+
+  ```bash
+  uv run prek list
+  ```
+
+All of the above honour the same virtual‑environment setup that `make bootstrap` creates, so you never need to install anything globally.
+
+### Running Linkspector with a custom Chrome/Chromium binary
+
+If you need to tell Linkspector (via Puppeteer) where your Chrome/Chromium executable lives, set the `PUPPETEER_EXECUTABLE_PATH` environment variable when invoking `prek`. For a typical system installation you can run:
+
+```bash
+PUPPETEER_EXECUTABLE_PATH=$(which chromium) uv run prek run linkspector -v
+```
+
+You can also add this export to your shell profile or CI configuration instead of passing it on the command line each time.
+
 ## Pull request workflow
 
 All changes are made via
