@@ -58,10 +58,10 @@ The service declares a dependency on `ipu6-virtual-webcam.service` to ensure the
    Replace `/etc/modprobe.d/v4l2loopback.conf`:
 
    ```bash
-   echo 'options v4l2loopback devices=2 video_nr=42,43 card_label="IPU6 Virtual Webcam,IPU6 Loop Playback" exclusive_caps=1' | sudo tee /etc/modprobe.d/v4l2loopback.conf
+   echo 'options v4l2loopback devices=2 video_nr=42,43 card_label="IPU6 Virtual Webcam,IPU6 Loop Playback" exclusive_caps=1,1' | sudo tee /etc/modprobe.d/v4l2loopback.conf
    ```
 
-   This changes `devices=1` to `devices=2` and assigns `/dev/video43` with the label "IPU6 Loop Playback". Both devices retain `exclusive_caps=1` for MS Teams compatibility.
+   This changes `devices=1` to `devices=2` and assigns `/dev/video43` with the label "IPU6 Loop Playback". Both devices retain `exclusive_caps=1,1` (one value per device) for MS Teams compatibility.
 
 3. Create the recording and playback script at `~/.local/bin/webcam-loop-record.sh`:
 
