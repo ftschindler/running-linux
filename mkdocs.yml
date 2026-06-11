@@ -25,6 +25,8 @@ plugins:
 - obsidian-support
 - backlinks_section
 - excalidraw
+- git-revision-date-localized:
+    enable_creation_date: true
 - glightbox
 markdown_extensions:
 - admonition
