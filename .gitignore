@@ -16,3 +16,4 @@ site/
 
 # OpenCode runtime files
 .omo/
+.playwright-mcp

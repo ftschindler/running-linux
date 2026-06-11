@@ -2,7 +2,6 @@
 title: PKB Tech Stack
 ---
 
-- **Date:** 2026-05-20
 - **Status:** Implemented
 - **Context:** Planning a publishable Personal Knowledge Base (PKB) as a git-based static site
 

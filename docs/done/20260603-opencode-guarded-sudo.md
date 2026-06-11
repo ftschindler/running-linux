@@ -2,7 +2,6 @@
 title: Guarded Sudo for OpenCode Agents
 ---
 
-- **Date:** 2026-06-03
 - **Context:** Manjaro Linux (KDE Plasma) running OpenCode with a custom plugin tool
 
 ## Problem Statement
