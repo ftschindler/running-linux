@@ -2,7 +2,6 @@
 title: Git Multi-Identity via Conditional Includes
 ---
 
-- **Date:** 2026-05-21
 - **Context:** Two GitHub accounts (personal + EMU) already authenticated via SSH host aliases; need per-account `user.name` and `user.email` without manual switching
 
 ## Problem Statement

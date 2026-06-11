@@ -2,7 +2,6 @@
 title: SSH-Based Multi-Account GitHub Authentication
 ---
 
-- **Date:** 2026-05-20
 - **Context:** Manjaro Linux with two GitHub accounts (personal + EMU) requiring tooling-independent auth
 
 ## Problem Statement

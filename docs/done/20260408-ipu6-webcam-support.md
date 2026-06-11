@@ -2,7 +2,6 @@
 title: Intel IPU6 Webcam Support on Dell Precision 5470
 ---
 
-- **Date:** 2026-04-08
 - **Context:** Manjaro Linux with KDE Plasma on Dell Precision 5470, Intel 12th Gen i7-12800H
 
 ## Problem Statement

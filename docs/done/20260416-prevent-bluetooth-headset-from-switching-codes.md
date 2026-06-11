@@ -2,8 +2,6 @@
 title: Bluetooth Headset Codec Switching Issue (MSBC → SBC)
 ---
 
-- **Date:** 2026-04-16
-
 ## Problem
 
 Bluetooth headset (Shokz OpenMove) on Manjaro with PipeWire would immediately revert from MSBC codec back to SBC after manually selecting MSBC profile. This made the headset microphone unusable.
