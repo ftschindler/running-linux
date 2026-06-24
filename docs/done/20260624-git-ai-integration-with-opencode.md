@@ -52,7 +52,37 @@ This stores all prompts and session transcripts in git notes (`refs/notes/ai`), 
 - Survive fresh checkouts
 - Are versioned alongside your code
 
-### 3. Configure Git to Auto-Sync Notes
+### 3. Disable Telemetry (Recommended for Local-Only Operation)
+
+By default, git-ai sends anonymous usage metrics to `usegitai.com`. To ensure fully local operation:
+
+```bash
+# Disable OSS telemetry
+git-ai config set telemetry_oss off
+
+# Disable version checks (no outbound calls to check for updates)
+git-ai config set disable_version_checks true
+
+# Disable auto-updates
+git-ai config set disable_auto_updates true
+```
+
+**What data is sent if telemetry is enabled:**
+
+- Anonymous usage statistics (command counts, feature usage)
+- Version information
+- Session metadata (duration, operations performed)
+
+**What NEVER leaves your machine:**
+
+- Prompts and session transcripts
+- Code changes or file contents
+- File paths or repository structure
+- API keys or credentials
+
+With telemetry disabled, git-ai operates **100% locally** with zero external network calls.
+
+### 4. Configure Git to Auto-Sync Notes
 
 Configure git to automatically push and fetch AI notes:
 
@@ -64,7 +94,7 @@ git config --global push.defaultNotesRef refs/notes/ai
 git config --global remote.origin.fetch "+refs/notes/ai:refs/notes/ai"
 ```
 
-### 4. Restart Agents
+### 5. Restart Agents
 
 Any running agent sessions must be restarted for hooks to take effect.
 Work done before installing git-ai (or before restarting agents) will be attributed as human.
@@ -86,12 +116,20 @@ Git AI stores global configuration at `~/.git-ai/config.json`:
 cat ~/.git-ai/config.json
 # Output:
 # {
+#   "telemetry_oss": "off",
+#   "disable_version_checks": true,
+#   "disable_auto_updates": true,
 #   "api_base_url": "https://usegitai.com",
 #   "prompt_storage": "notes"
 # }
 ```
 
-The `prompt_storage: "notes"` setting ensures all prompts and session data are stored in git notes.
+Key settings for local-only operation:
+
+- `prompt_storage: "notes"` – All prompts stored in git notes (travels with repo)
+- `telemetry_oss: "off"` – No usage metrics sent externally
+- `disable_version_checks: true` – No outbound update checks
+- `disable_auto_updates: true` – No automatic downloads
 
 ### Check Repository Attribution Data
 
@@ -287,9 +325,9 @@ code --uninstall-extension git-ai.git-ai-vscode
 
 3. **Plugin integration is robust** – The OpenCode plugin hooks into the standard `tool.execute.*` events and handles both file operations and bash commands
 
-4. **Attribution data is local-first** – By default, prompts are stored in a local SQLite database (`~/.git-ai/internal/transcripts-db`), keeping repos lean and sensitive data private
+4. **Fully local operation possible** – With telemetry disabled (`telemetry_oss: off`), git-ai makes zero external network calls. All data stays on your machine.
 
-5. **Git notes are git-native** – Attribution travels with commits via `refs/notes/ai`, which can be pushed to remotes that support notes
+5. **Prompt storage in git notes** – All prompts and session data travel with the repository via `refs/notes/ai`, enabling full context recovery after fresh checkouts
 
 6. **OhMyOpenAgent compatibility** – The plugin works with OhMyOpenAgent (the OpenCode fork used in this setup) because it uses the standard OpenCode plugin API
 
