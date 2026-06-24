@@ -1,0 +1,28 @@
+docs/done/20260624-git-ai-integration-with-opencode.md
+  s_d9bfa4020dc848::t_298e299f8e811b 13,15
+  s_d9bfa4020dc848::t_1c7f55981f6e4c 50
+  s_d9bfa4020dc848::t_95280b1fafc40e 179,184-197,200,202-206
+  h_0f8f9341a40674 5,69
+  s_d9bfa4020dc848::t_3efa69255bfbf3 41,43-46,49,51-55,57,60-64,67-68,85-91,94
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.13",
+  "base_commit_sha": "1ccc3516f13b162fa0492bbcaf464a5734f4a306",
+  "prompts": {},
+  "humans": {
+    "h_0f8f9341a40674": {
+      "author": "Felix Schindler <107669806+ftschindler@users.noreply.github.com>"
+    }
+  },
+  "sessions": {
+    "s_d9bfa4020dc848": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_104e09350ffeE9JslOfXSyeSue",
+        "model": "unknown"
+      },
+      "human_author": "Felix Schindler <107669806+ftschindler@users.noreply.github.com>"
+    }
+  }
+}
