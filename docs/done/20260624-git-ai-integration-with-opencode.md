@@ -2,7 +2,7 @@
 title: Git AI Integration with OpenCode
 ---
 
-**Context** – Manjaro Linux running OpenCode (via OhMyOpenAgent) with OVHcloud AI Endpoints. This guide documents the installation, verification and behaviour of [Git AI](https://usegitai.com/) – a tool that tracks AI-generated code from prompt to commit.
+**Context** – Manjaro Linux running OpenCode (with [OhMyOpenAgent](20260603-oh-my-openagent-installation.md)). This guide documents the installation, verification and behaviour of [Git AI](https://usegitai.com/) – a tool that tracks AI-generated code from prompt to commit.
 
 ## What is Git AI?
 
@@ -10,8 +10,9 @@ Git AI is a git extension that tracks AI-generated code in your repositories. It
 
 - **AI Blame** – See which lines were written by AI vs humans, and query the original prompts
 - **Commit Stats** – Aggregate AI vs human code percentages per commit
-- **Prompt Storage** – Sessions are stored locally (SQLite) or in git notes
+- **Prompt Storage** – All prompts and session data stored in git notes, travelling with the repository
 - **No Workflow Changes** – Works transparently in the background
+- **Fresh Checkout Ready** – After cloning, fetch notes to recover all AI attribution data
 
 ## How Git AI Works
 
@@ -37,26 +38,35 @@ This installs:
 - VS Code extension (`git-ai.git-ai-vscode`)
 - Agent hooks for Claude Code, GitHub Copilot, and OpenCode
 
-**Output from installation:**
+### 2. Configure Prompt Storage
 
-```text
-Installed git-ai 1.5.13
-Setting up IDE/agent hooks...
-✓ Claude Code: Hooks updated
-✓ VS Code: Hooks already up to date
-✓ GitHub Copilot: Hooks updated
-✓ OpenCode: Hooks updated
-```
-
-### 2. Restart Agents
-
-Any running agent sessions must be restarted for hooks to take effect:
+Set prompt storage to `notes` mode so all data travels with the repository:
 
 ```bash
-# Kill existing opencode sessions
-# Then restart opencode fresh
+git-ai config set prompt_storage notes
 ```
 
+This stores all prompts and session transcripts in git notes (`refs/notes/ai`), ensuring they:
+
+- Travel with the repository on clone/fetch
+- Survive fresh checkouts
+- Are versioned alongside your code
+
+### 3. Configure Git to Auto-Sync Notes
+
+Configure git to automatically push and fetch AI notes:
+
+```bash
+# Push notes by default
+git config --global push.defaultNotesRef refs/notes/ai
+
+# Fetch notes by default
+git config --global remote.origin.fetch "+refs/notes/ai:refs/notes/ai"
+```
+
+### 4. Restart Agents
+
+Any running agent sessions must be restarted for hooks to take effect.
 Work done before installing git-ai (or before restarting agents) will be attributed as human.
 
 ## Verification
@@ -72,25 +82,16 @@ git-ai --version
 
 Git AI stores global configuration at `~/.git-ai/config.json`:
 
-```json
-{
-  "api_base_url": "https://usegitai.com",
-  "prompt_storage": "default",
-  "git_path": "/usr/bin/git",
-  "telemetry_oss_disabled": false,
-  "disable_auto_updates": false,
-  "update_channel": "latest"
-}
+```bash
+cat ~/.git-ai/config.json
+# Output:
+# {
+#   "api_base_url": "https://usegitai.com",
+#   "prompt_storage": "notes"
+# }
 ```
 
-Key configuration options:
-
-- `prompt_storage` – Controls where prompts are stored:
-  - `"default"` – Local SQLite database (outside git)
-  - `"notes"` – Include in git notes (travels with repo)
-  - `"local"` – Local SQLite only
-- `include_prompts_in_repositories` – Per-repo overrides for prompt storage
-- `exclude_repositories` – Repositories where git-ai should be disabled
+The `prompt_storage: "notes"` setting ensures all prompts and session data are stored in git notes.
 
 ### Check Repository Attribution Data
 
@@ -175,40 +176,34 @@ This will output checkpoint errors to `console.error`.
 .git/ai/                       # Checkpoint storage
 .git/ai/logs/                  # Session logs
 .git/ai/working_logs/          # Working tree checkpoints
-refs/notes/ai                  # Git notes with attribution
+refs/notes/ai                  # Git notes with attribution (travels with repo)
 ```
 
 ### Prompt/Session Transcripts
 
-Controlled by `prompt_storage` config:
+With `prompt_storage: "notes"`, all prompts and session transcripts are stored in git notes (`refs/notes/ai`). This ensures:
 
-| Mode        | Storage Location                               | Travels with Repo? |
-|-------------|------------------------------------------------|--------------------|
-| `"default"` | `~/.git-ai/internal/transcripts-db` (SQLite)   | No                 |
-| `"notes"`   | Git notes (`refs/notes/ai`)                    | Yes                |
-| `"local"`   | Local SQLite only                              | No                 |
+- **Full data portability** – Clone a repo and fetch notes to recover all AI context
+- **Versioned history** – Prompts are tied to specific commits
+- **Team collaboration** – Share AI context with collaborators via standard git push/fetch
 
-## Per-Repository Configuration
+## Fresh Checkout Workflow
 
-While the main `config.json` is global, you can configure per-repository behaviour:
+After cloning a repository with AI attribution data:
 
-```json
-{
-  "prompt_storage": "default",
-  "include_prompts_in_repositories": [
-    {
-      "pattern": "github.com/myorg/sensitive-repo",
-      "prompt_storage": "local"
-    }
-  ],
-  "default_prompt_storage": "notes"
-}
+```bash
+git clone <repository-url>
+cd <repository>
+git fetch origin refs/notes/ai:refs/notes/ai  # Fetch AI notes
 ```
 
-This configuration:
+Once fetched, all AI attribution data is available:
 
-- Stores prompts locally (SQLite) for `sensitive-repo`
-- Stores prompts in git notes for all other repos
+```bash
+git log --show-notes="ai"     # View commits with AI context
+git ai blame <file>           # See line-level attribution
+git ai stats                  # View AI vs human code ratios
+```
 
 ## Capabilities and Limitations
 
