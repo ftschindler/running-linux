@@ -80,19 +80,23 @@ git-ai config set disable_auto_updates true
 - File paths or repository structure
 - API keys or credentials
 
-With telemetry disabled, git-ai operates **100% locally** with zero external network calls.
+With telemetry and auto-updates disabled, git-ai operates **100% locally** with zero external network calls.
 
-### 4. Configure Git to Auto-Sync Notes
+### 4. Configure Git to Auto-Sync Notes (Per-Repository)
 
-Configure git to automatically push and fetch AI notes:
+Configure git notes sync **per-repository** (not globally, as repos without git-ai will error on fetch):
 
 ```bash
-# Push notes by default
-git config --global push.defaultNotesRef refs/notes/ai
-
-# Fetch notes by default
-git config --global remote.origin.fetch "+refs/notes/ai:refs/notes/ai"
+# In each repository that uses git-ai:
+git config --add remote.origin.fetch "+refs/notes/ai:refs/notes/ai"
+git config push.defaultNotesRef refs/notes/ai
 ```
+
+This ensures:
+
+- Notes are pushed when you `git push`
+- Notes are fetched when you `git fetch` or `git pull`
+- Other repositories (without git-ai) are unaffected
 
 ### 5. Restart Agents
 
@@ -154,124 +158,6 @@ git ai stats
 #          0%                                    0%
 ```
 
-## OpenCode Integration
-
-### How the Plugin Works
-
-Git AI installs a plugin at `~/.config/opencode/plugins/git-ai.ts` that hooks into OpenCode's plugin system. The plugin:
-
-1. Listens for `tool.execute.before` and `tool.execute.after` events
-2. Tracks file-modifying tools: `edit`, `write`, `patch`, `multiedit`, `apply_patch`, `bash`
-3. Calls `git-ai checkpoint opencode --hook-input stdin` with JSON metadata:
-
-   ```json
-   {
-     "hook_event_name": "PreToolUse",
-     "session_id": "<session-id>",
-     "tool_use_id": "<call-id>",
-     "cwd": "<repo-dir>",
-     "tool_name": "edit",
-     "tool_input": { ... }
-   }
-   ```
-
-### Plugin Location
-
-- **Global**: `~/.config/opencode/plugins/git-ai.ts`
-- **Project-local**: `.opencode/plugins/git-ai.ts`
-
-The plugin is automatically installed by `git-ai install-hooks` and references the git-ai binary path at install time:
-
-```typescript
-const GIT_AI_BIN = "/home/felix/.git-ai/bin/git-ai"
-```
-
-### Debugging
-
-Enable debug logging for the plugin:
-
-```bash
-export GIT_AI_OPENCODE_DEBUG=1
-# or
-export GIT_AI_DEBUG=true
-```
-
-This will output checkpoint errors to `console.error`.
-
-## Storage Locations
-
-### Global Configuration (Per-User)
-
-```text
-~/.git-ai/config.json          # Main configuration
-~/.git-ai/bin/git-ai           # Binary
-~/.git-ai/internal/            # Internal data (metrics, transcripts)
-```
-
-### Repository-Specific Data (Per-Repo)
-
-```text
-.git/ai/                       # Checkpoint storage
-.git/ai/logs/                  # Session logs
-.git/ai/working_logs/          # Working tree checkpoints
-refs/notes/ai                  # Git notes with attribution (travels with repo)
-```
-
-### Prompt/Session Transcripts
-
-With `prompt_storage: "notes"`, all prompts and session transcripts are stored in git notes (`refs/notes/ai`). This ensures:
-
-- **Full data portability** – Clone a repo and fetch notes to recover all AI context
-- **Versioned history** – Prompts are tied to specific commits
-- **Team collaboration** – Share AI context with collaborators via standard git push/fetch
-
-## Fresh Checkout Workflow
-
-After cloning a repository with AI attribution data:
-
-```bash
-git clone <repository-url>
-cd <repository>
-git fetch origin refs/notes/ai:refs/notes/ai  # Fetch AI notes
-```
-
-Once fetched, all AI attribution data is available:
-
-```bash
-git log --show-notes="ai"     # View commits with AI context
-git ai blame <file>           # See line-level attribution
-git ai stats                  # View AI vs human code ratios
-```
-
-## Capabilities and Limitations
-
-### Supported Features
-
-- **Edit/Write/Patch tools** – ✅ Line-level attribution
-- **Files created via Bash** – ✅ (if cwd is in repo)
-- **git worktrees** – ✅ Attribution maintained
-- **Background Agents** – ✅ See docs
-- **Multiple sessions per commit** – ✅
-- **Human override detection** – ✅
-- **Token/cost tracking** – ✅
-- **Tool-call level attribution** – ✅
-
-### Git Operations Support
-
-- **`git rebase`** – ✅ Attribution preserved
-- **`git cherry-pick`** – ✅
-- **`git stash` / `pop`** – ✅
-- **`git merge --squash`** – ✅
-- **`git reset` (soft/mixed/hard)** – ✅
-- **`git merge` (merge commit)** – ✅
-- **`git commit --amend`** – ✅
-- **`git checkout` / `switch`** – ✅
-- **`git pull`** – ✅
-- **`git push` / `fetch`** – ✅ Notes synced
-- **`git mv`** – ❌ Renames not tracked
-- **`git filter-branch`** – ❌ Bulk rewrites not tracked
-- **`git replace`** – ❌ Object replacements not tracked
-
 ## Commands
 
 ### View AI Attribution
@@ -316,34 +202,3 @@ rm ~/.local/bin/git-ai
 # Remove VS Code extension
 code --uninstall-extension git-ai.git-ai-vscode
 ```
-
-## Observations from This Test
-
-1. **Installation is seamless** – The installer automatically detected and updated hooks for OpenCode, Claude Code, and GitHub Copilot
-
-2. **No per-repo setup required** – Git AI works immediately in any git repository after global installation
-
-3. **Plugin integration is robust** – The OpenCode plugin hooks into the standard `tool.execute.*` events and handles both file operations and bash commands
-
-4. **Fully local operation possible** – With telemetry disabled (`telemetry_oss: off`), git-ai makes zero external network calls. All data stays on your machine.
-
-5. **Prompt storage in git notes** – All prompts and session data travel with the repository via `refs/notes/ai`, enabling full context recovery after fresh checkouts
-
-6. **OhMyOpenAgent compatibility** – The plugin works with OhMyOpenAgent (the OpenCode fork used in this setup) because it uses the standard OpenCode plugin API
-
-## Next Steps
-
-To fully verify the integration:
-
-1. Make an edit using OpenCode with git-ai installed
-2. Commit the change
-3. Run `git ai stats` to see AI attribution
-4. Run `git log --show-notes="ai"` to see the attribution metadata
-5. Run `git ai blame <file>` to see line-level attribution
-
-## References
-
-- [Git AI Documentation](https://usegitai.com/docs/agents/opencode)
-- [Git AI GitHub Repository](https://github.com/git-ai-project/git-ai)
-- [OpenCode Plugin API](https://opencode.ai/docs/plugins/)
-- [Git AI Standard Specification](https://github.com/git-ai-project/git-ai/blob/main/specs/git_ai_standard_v3.0.0.md)
