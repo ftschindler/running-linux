@@ -2,7 +2,7 @@
 repos:
 # -- Validate as much json as we can --
 - repo: https://github.com/python-jsonschema/check-jsonschema
-  rev: f805888065fdb6162e1f800e50bb9460cbd223d6  # frozen: 0.37.2
+  rev: 6b63472e72e1a91ed8a2f6d483790dfb644fa1d3  # frozen: 0.37.4
   hooks:
   - id: check-jsonschema
     name: Validate markdownlint-cli2 config schema
@@ -12,13 +12,13 @@ repos:
 # -- Markdown linting and canonicalisation --
 - repo: https://github.com/DavidAnson/markdownlint-cli2
   # ATTENTION: ensure to update the version in check-jsonschema above!
-  rev: 996abf60411a8d954288ac9856aae7602b80cbda  # frozen: v0.22.1
+  rev: 534166213006ec869b773b7ed8c6ebeaad1165d0  # frozen: v0.23.0
   hooks:
   - id: markdownlint-cli2
     files: \.md$
     args: [--config=.markdownlint-cli2.jsonc, --fix]
 - repo: https://github.com/jackdewinter/pymarkdown
-  rev: 491b8945442244c6b03028a96e9a8bde9ad63400  # frozen: v0.9.37
+  rev: 5a91b386476b633c4a594951397139aa5ab45a78  # frozen: v0.9.38
   hooks:
   - id: pymarkdown
     name: PyMarkdown linter
@@ -39,7 +39,7 @@ repos:
     # -- Python formatting + linting --
 - repo: https://github.com/astral-sh/ruff-pre-commit
   # Ruff version.
-  rev: 0c7b6c989466a93942def1f84baf36ddfcd60c83  # frozen: v0.15.14
+  rev: c59bba8fb259db0fec2bbb77ad8ba51ea7341b56  # frozen: v0.15.20
   hooks:
   - id: ruff-check
   - id: ruff-format
