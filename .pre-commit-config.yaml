@@ -12,13 +12,13 @@ repos:
 # -- Markdown linting and canonicalisation --
 - repo: https://github.com/DavidAnson/markdownlint-cli2
   # ATTENTION: ensure to update the version in check-jsonschema above!
-  rev: 534166213006ec869b773b7ed8c6ebeaad1165d0  # frozen: v0.23.0
+  rev: 06f92c99e930c11230426b5edd775021d25e08a8  # frozen: v0.23.1
   hooks:
   - id: markdownlint-cli2
     files: \.md$
     args: [--config=.markdownlint-cli2.jsonc, --fix]
 - repo: https://github.com/jackdewinter/pymarkdown
-  rev: 5a91b386476b633c4a594951397139aa5ab45a78  # frozen: v0.9.38
+  rev: b7c6d5936ef699bcf5af0b0c2558118d3eba24d6  # frozen: v0.9.39
   hooks:
   - id: pymarkdown
     name: PyMarkdown linter
@@ -39,7 +39,7 @@ repos:
     # -- Python formatting + linting --
 - repo: https://github.com/astral-sh/ruff-pre-commit
   # Ruff version.
-  rev: 01a675ea018f2fb714478a5ffb83fcea8374bb06  # frozen: v0.15.21
+  rev: 2700fd5671c633760d912769c041bfcde2b9a01b  # frozen: v0.15.22
   hooks:
   - id: ruff-check
   - id: ruff-format
